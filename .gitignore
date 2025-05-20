@@ -5,3 +5,4 @@ driver_service_credentials.json
 driver_service_credentials.json/
 vendor/
 /vendor/
+cacert.pem
