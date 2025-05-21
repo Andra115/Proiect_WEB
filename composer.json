@@ -1,6 +1,16 @@
 {
-  "require": {
-    "google/apiclient": "^2.0",
-    "guzzlehttp/guzzle": "^7.7"
-  }
+    "web": {
+        "client_id": "951653648459-e6ql8b46vco35ji4o3cvdv26icd9qicq.apps.googleusercontent.com",
+        "project_id": "webproject-460315",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_secret": "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",
+        "redirect_uris": [
+            "http://localhost:8000/php/cloud/drive_oauth2callback.php"
+        ],
+        "javascript_origins": [
+            "http://localhost:3000"
+        ]
+    }
 }

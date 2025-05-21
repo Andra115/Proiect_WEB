@@ -1,6 +1,10 @@
 <?php
 session_start();
 require_once 'db.php';
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 $message = '';
 
@@ -16,8 +20,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loginSuccess = $stmt->fetchColumn();
 
         if ($loginSuccess) {
-            $_SESSION['username'] = $username;
-            header('Location: welcome.php');
+            $key = "Aceasta este o cheie supersecreta";
+            $iss_time = time();
+
+            $userIdStmt = $pdo->prepare('SELECT id FROM users WHERE username = :username');
+            $userIdStmt->execute(['username' => $username]);
+            $userId = $userIdStmt->fetchColumn();
+
+            $payload = ["iss" => "https://localhost:8000",
+            "iat" => $iss_time,
+            "exp" => $iss_time + 3600,
+            "user_id"=> $userId
+            ];
+            $jwt = JWT::encode($payload, $key, 'HS256');
+
+            echo $jwt;
+
+            echo "<script>
+            localStorage.setItem('jwt', " . json_encode($jwt) . ");
+            window.location.href = 'welcome.php';
+            </script>";
             exit;
         }
       } catch (PDOException $e) {
