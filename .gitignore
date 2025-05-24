@@ -11,3 +11,5 @@ cacert.pem/
 composer.lock
 box_credentials.json
 box_credentials.json/
+cacert.pem
+
