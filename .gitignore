@@ -5,3 +5,9 @@ driver_service_credentials.json/
 vendor/
 /vendor/
 dropbox_credentials.json
+dropbox_credentials.json/
+cacert.pem
+cacert.pem/
+composer.lock
+box_credentials.json
+box_credentials.json/

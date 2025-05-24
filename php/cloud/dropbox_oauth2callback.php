@@ -4,12 +4,12 @@ session_start();
 
 $creds_file = __DIR__ . '/../../dropbox_credentials.json';
 if (!file_exists($creds_file)) {
-    die('Credentials file not found');
+    die('Error : Credentials file not found');
 }
 
 $creds = json_decode(file_get_contents($creds_file), true);
 if (!$creds) {
-    die('Invalid credentials file');
+    die('Error : Invalid credentials file');
 }
 
 $client_id = $creds['client_id'];
