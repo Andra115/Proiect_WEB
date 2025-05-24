@@ -34,7 +34,7 @@ if (isset($_GET['code'])) {
     }
 
   
-    header('Location: idkyet.php');
+    header('Location: upload.php');
     exit;
 } else {
    

@@ -1,3 +1,5 @@
 http://localhost:8000/php/cloud/drive.php
 http://localhost:8000/php/cloud/drive_oauth2callback.php
 http://localhost:8000/php/cloud/drive_upload.php
+http://localhost:8000/php/cloud/dropbox.php
+http://localhost:8000/php/cloud/dropbox_oauth2callback.php
