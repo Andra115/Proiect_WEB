@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Welcome to CloudBox</title>
+  <title>Welcome to CloudNine9</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>

@@ -42,11 +42,11 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
 $response = curl_exec($ch);
 $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    
-    if (curl_error($ch)) {
-        curl_close($ch);
-        die('Curl error: ' . curl_error($ch));
-    }
+
+if (curl_error($ch)) {
+    curl_close($ch);
+    die('Curl error: ' . curl_error($ch));
+}
 
 curl_close($ch);
 
@@ -55,8 +55,159 @@ $token = json_decode($response, true);
 if (isset($token['access_token']) && $http_code === 200) {
     $_SESSION['box_access_token'] = $token['access_token'];
     if (isset($token['refresh_token'])) {
-            $_SESSION['box_refresh_token'] = $token['refresh_token'];
+        $_SESSION['box_refresh_token'] = $token['refresh_token'];
+    }
+
+    $access_token = $token['access_token'];
+    $ch = curl_init("https://api.box.com/2.0/users/me");
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: Bearer $access_token",
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $user_info = json_decode($response, true);
+    $email = $user_info['login'] ?? null;
+    if (!$email) {
+        die('Error while trying to retrieve email');
+    }
+
+    $conn = new PDO("mysql:host=localhost;dbname=ust", "user", "pass");
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $stmt = $conn->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box'");
+    $stmt->execute([$email]);
+    $account_id = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $token_expiry = time() + $token['expires_in'];
+
+
+    if (!$account_id) {
+        $stmt = $conn->prepare("INSERT INTO cloud_accounts (user_id,provider, email, access_token,refresh_token,,token_expiry,total_space,space_available) 
+                            VALUES (?, 'box', ?,?,?,?,?,?)");
+        $stmt->execute([
+            $user_id,
+            $email,
+            $token['access_token'],
+            $token['refresh_token'],
+            $token_expiry,
+            null,
+            null
+        ]);
+        $stmt = $conn->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box'");
+        $stmt->execute([$email]);  
+        $account_id = $stmt->fetchColumn(); 
+        
+    } else {
+        $stmt = $conn->prepare("UPDATE cloud_accounts SET access_token = ? 
+    WHERE email = ? AND provider = 'box'");
+        $stmt->execute([$access_token, $email]);
+    }
+    //getting all files from this cloud account
+    function listAllFiles($folderId = '0', $access_token)
+    {
+        $files = [];
+
+        $url = "https://api.box.com/2.0/folders/$folderId/items?limit=1000";
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bearer $access_token",
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+
+        if (!isset($data['entries'])) return $files;
+
+        foreach ($data['entries'] as $item) {
+            if ($item['type'] === 'file') {
+                $files[] = [
+                    'id' => $item['id'],
+                    'name' => $item['name'],
+                    'size' => $item['size'],
+                    'created_at' => $item['created_at'],
+                    'type' => $item['type'],
+                ];
+            } elseif ($item['type'] === 'folder') {
+                $files = array_merge($files, listAllFiles($item['id'], $access_token));
+            }
         }
+
+        return $files;
+    }
+
+    $all_files = listAllFiles('0', $access_token);
+    $total_used = array_sum(array_column($all_files, 'size'));
+    try {
+        $stmt = $conn->prepare("
+        UPDATE cloud_accounts 
+        SET total_space = ?, space_available = ? 
+        WHERE email = ? AND provider = 'box'");
+        $stmt->execute([
+            10737418240, //i can t get the total space from api so we re gonna assume 10 gb free plan
+            $total_used,
+            $email
+        ]);
+    } catch (PDOException $e) {
+        die("DB error: " . $e->getMessage());
+    }
+
+
+    try {
+        $stmt = $conn->prepare("
+    SELECT file_id FROM files WHERE account_id = ?");
+        $stmt->execute([$account_id]);
+
+        $existingFileIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $stmtInsert = $conn->prepare("
+    INSERT INTO files (account_id, file_name, file_size,uploaded_at, type)
+    VALUES (?, ?, ?, ?, ?)");
+
+
+        foreach ($all_files as $file) {
+            if (!in_array($file['id'], $existingFileIds)) {
+                $stmtInsert->execute([
+                    $account_id,
+                    $file['name'],
+                    $file['size'],
+                    date('Y-m-d H:i:s', strtotime($file['created_at'])),
+                    $file['type']
+                ]);
+            }
+        }
+    } catch (PDOException $e) {
+        die("DB error: " . $e->getMessage());
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     header("Location: upload.php");
     exit;
