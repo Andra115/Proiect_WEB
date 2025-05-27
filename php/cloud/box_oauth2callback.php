@@ -141,6 +141,7 @@ if (isset($token['access_token']) && $http_code === 200) {
     }
 
     $all_files = listAllFiles('0', $access_token);
+    $total_used = 0;
     $total_used = array_sum(array_column($all_files, 'size'));
     try {
         $stmt = $conn->prepare("
@@ -149,7 +150,7 @@ if (isset($token['access_token']) && $http_code === 200) {
         WHERE email = ? AND provider = 'box'");
         $stmt->execute([
             10737418240, //i can t get the total space from api so we re gonna assume 10 gb free plan
-            $total_used,
+            10737418240 - $total_used,
             $email
         ]);
     } catch (PDOException $e) {
