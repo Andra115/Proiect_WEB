@@ -47,7 +47,9 @@ if (isset($_GET['code'])) {
 
 
   
-    header('Location: u_d_page.php');
+
+    header('Location: upload.php');
+
     exit;
 } else {
    
