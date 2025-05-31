@@ -14,4 +14,7 @@ box_credentials.json/
 cacert.pem
 composer.json
 composer.json/
-
+php/db.php
+db.php
+db_credentials.json
+db_credentials.json/

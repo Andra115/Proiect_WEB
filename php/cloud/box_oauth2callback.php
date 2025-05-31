@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+require_once __DIR__ . '/../db.php';
 if (!isset($_SESSION['user_id'])) {
     header("Location: /../../login.php");
     exit;
@@ -77,41 +77,42 @@ if (isset($token['access_token']) && $http_code === 200) {
         die('Error while trying to retrieve email');
     }
 
-    $conn = new PDO("mysql:host=localhost;dbname=ust", "user", "pass");
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $stmt = $conn->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box'");
+    $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box'");
     $stmt->execute([$email]);
-    $account_id = $stmt->fetch(PDO::FETCH_ASSOC);
+    $account_result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $account_id = $account_result ? $account_result['account_id'] : null;
 
     $token_expiry = time() + $token['expires_in'];
 
 
     if (!$account_id) {
-        $stmt = $conn->prepare("INSERT INTO cloud_accounts (user_id,provider, email, access_token,refresh_token,,token_expiry,total_space,space_available) 
+        $stmt = $pdo->prepare("INSERT INTO cloud_accounts (user_id,provider, email, access_token,refresh_token,token_expiry,total_space,space_available) 
                             VALUES (?, 'box', ?,?,?,?,?,?)");
+        
+        $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry);             
         $stmt->execute([
             $user_id,
             $email,
             $token['access_token'],
             $token['refresh_token'],
-            $token_expiry,
-            null,
-            null
+            $token_expiry_formatted,
+            10737418240,
+            10737418240
         ]);
-        $stmt = $conn->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box'");
+        $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box'");
         $stmt->execute([$email]);  
         $account_id = $stmt->fetchColumn(); 
         
     } else {
-        $stmt = $conn->prepare("UPDATE cloud_accounts SET access_token = ? WHERE email = ? AND provider = 'box'");
-        $stmt->execute([$access_token, $email]);
+        $stmt = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry=? WHERE email = ? AND provider = 'box'");
+        $stmt->execute([$access_token,date('Y-m-d H:i:s', $token_expiry), $email]);
     }
     //getting all files from this cloud account
     function listAllFiles($access_token, $folderId = '0')
     {
         $files = [];
 
-        $url = "https://api.box.com/2.0/folders/$folderId/items?limit=1000";
+        $url = "https://api.box.com/2.0/folders/$folderId/items?limit=1000&fields=id,name,size,created_at,type";
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -136,7 +137,7 @@ if (isset($token['access_token']) && $http_code === 200) {
                     'type' => $item['type'],
                 ];
             } elseif ($item['type'] === 'folder') {
-                $files = array_merge($files, listAllFiles($item['id'], $access_token));
+                $files = array_merge($files, listAllFiles($access_token, $item['id']));
             }
         }
 
@@ -147,10 +148,8 @@ if (isset($token['access_token']) && $http_code === 200) {
     $total_used = 0;
     $total_used = array_sum(array_column($all_files, 'size'));
     try {
-        $stmt = $conn->prepare("
-        UPDATE cloud_accounts 
-        SET total_space = ?, space_available = ? 
-        WHERE email = ? AND provider = 'box'");
+        $stmt = $pdo->prepare("
+        UPDATE cloud_accounts  SET total_space = ?, space_available = ? WHERE email = ? AND provider = 'box'");
         $stmt->execute([
             10737418240, //i can t get the total space from api so we re gonna assume 10 gb free plan
             10737418240 - $total_used,
@@ -162,20 +161,18 @@ if (isset($token['access_token']) && $http_code === 200) {
 
 
     try {
-        $stmt = $conn->prepare("
-    SELECT file_id FROM files WHERE account_id = ?");
-        $stmt->execute([$account_id]);
+        $stmt = $pdo->prepare("SELECT file_id FROM files WHERE user_id = ? AND account_id = ?");
+        $stmt->execute([$user_id, $account_id]);
+    
 
         $existingFileIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-        $stmtInsert = $conn->prepare("
-    INSERT INTO files (account_id, file_name, file_size,uploaded_at, type)
-    VALUES (?, ?, ?, ?, ?)");
-
+        $stmtInsert = $pdo->prepare("INSERT INTO files (user_id,account_id,file_name, file_size,uploaded_at, type) VALUES (?,?, ?, ?, ?, ?)");
 
         foreach ($all_files as $file) {
             if (!in_array($file['id'], $existingFileIds)) {
                 $stmtInsert->execute([
+                    $user_id,
                     $account_id,
                     $file['name'],
                     $file['size'],
@@ -191,7 +188,7 @@ if (isset($token['access_token']) && $http_code === 200) {
 
 
 
-    header("Location: welcome.php");
+    header("Location: /php/welcome.php");
     exit;
 } else {
     die('OAuth failed: ' . htmlspecialchars($response));
