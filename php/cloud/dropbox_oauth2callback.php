@@ -65,7 +65,7 @@ if (isset($_GET['code'])) {
         }
         
        
-        header("Location: upload.php");
+        header("Location: welcome.php");
         exit;
     } else {
         echo "OAuth failed (HTTP $http_code): " . htmlspecialchars($response);

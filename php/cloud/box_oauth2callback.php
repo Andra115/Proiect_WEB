@@ -1,7 +1,11 @@
 <?php
 session_start();
 
-
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /../../login.php");
+    exit;
+}
+$user_id = $_SESSION['user_id'];
 $creds_file = __DIR__ . '/../../box_credentials.json';
 if (!file_exists($creds_file)) {
     die('Error : Credentials file not found');
@@ -99,12 +103,11 @@ if (isset($token['access_token']) && $http_code === 200) {
         $account_id = $stmt->fetchColumn(); 
         
     } else {
-        $stmt = $conn->prepare("UPDATE cloud_accounts SET access_token = ? 
-    WHERE email = ? AND provider = 'box'");
+        $stmt = $conn->prepare("UPDATE cloud_accounts SET access_token = ? WHERE email = ? AND provider = 'box'");
         $stmt->execute([$access_token, $email]);
     }
     //getting all files from this cloud account
-    function listAllFiles($folderId = '0', $access_token)
+    function listAllFiles($access_token, $folderId = '0')
     {
         $files = [];
 
@@ -140,7 +143,7 @@ if (isset($token['access_token']) && $http_code === 200) {
         return $files;
     }
 
-    $all_files = listAllFiles('0', $access_token);
+    $all_files = listAllFiles($access_token, '0');
     $total_used = 0;
     $total_used = array_sum(array_column($all_files, 'size'));
     try {
@@ -188,29 +191,7 @@ if (isset($token['access_token']) && $http_code === 200) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    header("Location: upload.php");
+    header("Location: welcome.php");
     exit;
 } else {
     die('OAuth failed: ' . htmlspecialchars($response));
