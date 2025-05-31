@@ -1,6 +1,6 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f2f2f2;
+  font-family: 'Lemon', serif;
+  background: #ffffff;
   margin: 0;
   padding: 0;
   display: flex;
@@ -74,4 +74,91 @@ button:hover {
   font-size: 0.9em;
   color: #aaa;
   text-align: center;
+}
+
+.login {
+  background-color: #1c0856;
+  border-radius: 50px;
+  color: white;
+  font-family: 'Lemon', serif;
+  display: block;
+  min-width: 50%;
+  max-width: 100%;
+  text-align: center;
+  padding: 10px 20px;
+  text-decoration: none;
+  margin-top: 20px;
+  margin-left: 1em;
+  margin-right: 1em;
+  font-size: 1.2em;
+}
+
+.logo {
+  max-width: 10em;
+  min-width: 2em;
+  margin-bottom: 2em;
+  margin-top: 2em;
+
+}
+
+.loginButton {
+  background-color: white;
+  font-family: Lemon, serif;
+  font-weight: bold;
+  color: #1c0856;
+  border-radius: 50px;
+  padding-left: 3em;
+  padding-right: 3em;
+  font-size: 1em;
+  max-width: 50%;
+  width: auto;
+  display: inline-block;
+  min-width: fit-content;
+}
+
+input.loginFormItem {
+  margin: 1em 0;
+  font-family: Lemon, serif;
+  color: #1c0856;
+  max-width: 75%;
+  background: white;
+  border-radius: 500px;
+  padding: 1em;
+}
+
+.noAccount {
+  text-align: center;
+  margin-top: 3em;
+  margin-bottom: 2em;
+  font-family: Lemon, serif;
+}
+
+.rememberMe {
+  margin-top: 1em;
+  margin-bottom: 2em;
+}
+
+.connectionsMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 25vw;       /* Exactly 25% of viewport width */
+  height: 100vh;     /* Full viewport height */
+  background-color: #1c0856;
+  color: white;
+  display: flex;
+  flex-direction: column; /* stack children vertically */
+  align-items: center;    /* center horizontally */
+  padding-top: 1em;       /* some spacing at top */
+  box-sizing: border-box; /* include padding in width/height */
+  overflow: auto;         /* if content overflows, scroll */
+}
+
+.connectionsMenu .logo {
+  max-width: 80%;
+  margin-bottom: 2em;
+}
+
+.welcome{
+  color: white;
 }

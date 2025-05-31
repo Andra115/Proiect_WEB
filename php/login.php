@@ -9,45 +9,54 @@ use Firebase\JWT\Key;
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'] ?? '';
+    $email = $_POST['email'] ?? '';
     $passwordInput = $_POST['password'] ?? '';
 
-    if ($username && $passwordInput) 
+    if ($email && $passwordInput) 
     {
         try {
-        $stmt = $pdo->prepare('SELECT checkLogin(:username, :password)');
-        $stmt->execute(['username' => $username, 'password' => $passwordInput]);
+        $stmt = $pdo->prepare('SELECT checkLogin(:email, :password)');
+        $stmt->execute(['email' => $email, 'password' => $passwordInput]);
         $loginSuccess = $stmt->fetchColumn();
 
         if ($loginSuccess) {
-            $key = "Aceasta este o cheie supersecreta";
-            $iss_time = time();
-
-            $userIdStmt = $pdo->prepare('SELECT id FROM users WHERE username = :username');
-            $userIdStmt->execute(['username' => $username]);
-            $userId = $userIdStmt->fetchColumn();
-
-            $payload = ["iss" => "https://localhost:8000",
-            "iat" => $iss_time,
-            "exp" => $iss_time + 3600,
-            "user_id"=> $userId
-            ];
-            $jwt = JWT::encode($payload, $key, 'HS256');
-
-            echo $jwt;
-
-            echo "<script>
-            localStorage.setItem('jwt', " . json_encode($jwt) . ");
-            window.location.href = 'welcome.php';
-            </script>";
-            exit;
-        }
+    $key = "Aceasta este o cheie supersecreta";
+    $iss_time = time();
+    $userIdStmt = $pdo->prepare('SELECT user_id FROM users WHERE email = :email');
+    $userIdStmt->execute(['email' => $email]);
+    $userId = $userIdStmt->fetchColumn();
+    
+  
+    $payload = ["iss" => "https://localhost:8000",
+        "iat" => $iss_time,
+        "exp" => $iss_time + 2592000,
+        "user_id"=> $userId
+    ];
+    $jwt = JWT::encode($payload, $key, 'HS256');
+    
+     $remember = isset($_POST['remember']) ? 'true' : 'false';
+    
+    echo "<script>
+    const jwt = " . json_encode($jwt) . ";
+    const remember = " . json_encode($remember) . "; // This properly quotes it
+    
+    if (remember === 'true') { // Now string comparison works
+        localStorage.setItem('jwt', jwt);
+    } else {
+        sessionStorage.setItem('jwt', jwt);
+    }
+    
+    window.location.href = 'welcome.php';
+</script>";
+    exit;
+}
+    
       } catch (PDOException $e) {
         $errorCode = $e->getCode();
         if ($errorCode === 'P0001') {
-            $message = 'Username not found.';
+            $message = 'There is no user with this email address.';
         } elseif ($errorCode === 'P0002') {
-            $message = 'Incorrect password.';
+            $message = 'The password is incorrect.';
         } else {
             $message = 'Database error: ' . $e->getMessage();
         }
@@ -55,42 +64,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     } else {
-        $message = "Please enter username and password.";
+        $message = "";
     }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Welcome to CloudNine9</title>
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8" />
+<title>Login to Cloud9</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lemon&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Welcome to CloudBox</h1>
-    <p class="description">
-      CloudBox helps you manage, sync, and secure your files across Dropbox, Google Drive, and OneDrive. 
-      Enjoy encrypted storage, backup redundancy, and seamless file access — all in one place.
-    </p>
+  <div class="login">
 
-    <?php if ($message): ?>
-      <div class="message"><?= htmlspecialchars($message) ?></div>
-    <?php endif; ?>
+  <img src="../assets/logo_white_on_blue_background.jpeg" alt="Logo" class="logo"/>
 
     <form method="POST" action="">
-      <label>Username:
-        <input type="text" name="username" required>
-      </label>
-      <label>Password:
-        <input type="password" name="password" required>
-      </label>
-      <button type="submit">Login</button>
+      <input type="text" name="email" placeholder="Email" required class="loginFormItem">
+      <input type="password" name="password" placeholder="Password" required class="loginFormItem">
+      <div class="rememberMe">
+        <input type="checkbox" name="remember" value="1"> Remember me </div>
+        <?php if ($message): ?>
+      <div><?= htmlspecialchars($message) ?> </div>
+    <?php endif; ?>
+      <div> <button type="submit" class="loginButton">Log in</button> </div>
     </form>
 
-    <div class="footer">
-      Need an account? <a href="signup.php">Create one here</a>.
-    </div>
+      <div class="noAccount">No account? <a href="signup.php">Sign up here.</a></div>
   </div>
 </body>
 </html>
