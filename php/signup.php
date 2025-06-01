@@ -24,20 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorCode = $e->getCode();
             if ($errorCode === 'P0003') {
                 $message = 'An account using this email address already exists.';
-            } 
-            else if ($errorCode === 'P0004') {
-                $message = 'An account using this username already exists.';
             }
-            else if ($errorCode === 'P0005') {
+            else if ($errorCode === 'P0004') {
                 $message = 'Username can only contain letters, numbers, underscores, and hyphens.';
             } 
-            else if ($errorCode === 'P0006') {
+            else if ($errorCode === 'P0005') {
                 $message = 'Username must be at least 3 characters long.';
             }
-            else if ($errorCode === 'P0007') {
+            else if ($errorCode === 'P0006') {
                 $message = 'Password must be at least 8 characters long.';
             } 
-            else if ($errorCode === 'P0008') {
+            else if ($errorCode === 'P0007') {
                 $message = 'Passwords do not match.';
             }
             else {

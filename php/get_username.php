@@ -21,12 +21,15 @@ try {
     $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
     $userId = $decoded->user_id;
     
-    $stmt = $pdo->prepare('SELECT username FROM users WHERE user_id = :id');
+    $stmt = $pdo->prepare('SELECT * FROM get_user_info(:id)');
     $stmt->execute(['id' => $userId]);
-    $username = $stmt->fetchColumn();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if ($username) {
-        echo json_encode(['username' => $username]);
+    if ($user) {
+        echo json_encode([
+            'username' => $user['username'],
+            'email' => $user['email']
+        ]);
     } else {
         http_response_code(404);
         echo json_encode(['error' => 'User not found']);
