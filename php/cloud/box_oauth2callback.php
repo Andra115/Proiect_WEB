@@ -82,7 +82,7 @@ if (isset($token['access_token']) && $http_code === 200) {
     $account_result = $stmt->fetch(PDO::FETCH_ASSOC);
     $account_id = $account_result ? $account_result['account_id'] : null;
 
-    $token_expiry = time() + $token['expires_in'];
+    $token_expiry = time() + ($token['expires_in'] ?? 3600);
 
 
     if (!$account_id) {
@@ -105,88 +105,30 @@ if (isset($token['access_token']) && $http_code === 200) {
         
     } else {
         $stmt = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry=? WHERE email = ? AND provider = 'box'");
-        $stmt->execute([$access_token,date('Y-m-d H:i:s', $token_expiry), $email]);
-    }
-    //getting all files from this cloud account
-    function listAllFiles($access_token, $folderId = '0')
-    {
-        $files = [];
-
-        $url = "https://api.box.com/2.0/folders/$folderId/items?limit=1000&fields=id,name,size,created_at,type";
-
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Authorization: Bearer $access_token",
-        ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        $data = json_decode($response, true);
-
-        if (!isset($data['entries'])) return $files;
-
-        foreach ($data['entries'] as $item) {
-            if ($item['type'] === 'file') {
-                $files[] = [
-                    'id' => $item['id'],
-                    'name' => $item['name'],
-                    'size' => $item['size'],
-                    'created_at' => $item['created_at'],
-                    'type' => $item['type'],
-                ];
-            } elseif ($item['type'] === 'folder') {
-                $files = array_merge($files, listAllFiles($access_token, $item['id']));
-            }
-        }
-
-        return $files;
-    }
-
-    $all_files = listAllFiles($access_token, '0');
-    $total_used = 0;
-    $total_used = array_sum(array_column($all_files, 'size'));
-    try {
-        $stmt = $pdo->prepare("
-        UPDATE cloud_accounts  SET total_space = ?, space_available = ? WHERE email = ? AND provider = 'box'");
-        $stmt->execute([
-            10737418240, //i can t get the total space from api so we re gonna assume 10 gb free plan
-            10737418240 - $total_used,
-            $email
-        ]);
-    } catch (PDOException $e) {
-        die("DB error: " . $e->getMessage());
+        $stmt->execute([$access_token,$token_expiry_formatted, $email]);
     }
 
 
-    try {
-        $stmt = $pdo->prepare("SELECT file_id FROM files WHERE user_id = ? AND account_id = ?");
-        $stmt->execute([$user_id, $account_id]);
+
     
-
-        $existingFileIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-        $stmtInsert = $pdo->prepare("INSERT INTO files (user_id,account_id,file_name, file_size,uploaded_at, type) VALUES (?,?, ?, ?, ?, ?)");
-
-        foreach ($all_files as $file) {
-            if (!in_array($file['id'], $existingFileIds)) {
-                $stmtInsert->execute([
-                    $user_id,
-                    $account_id,
-                    $file['name'],
-                    $file['size'],
-                    date('Y-m-d H:i:s', strtotime($file['created_at'])),
-                    $file['type']
-                ]);
-            }
-        }
-    } catch (PDOException $e) {
-        die("DB error: " . $e->getMessage());
-    }
-
-
-
+    $sync_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/sync_files.php';
+    $sync_data = json_encode([
+        'account_id' => $account_id,
+        'access_token' => $access_token,
+        'email' => $email,
+        'provider' => 'box'
+    ]);
+  
+    $ch = curl_init($sync_url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $sync_data);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+    curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+    
+    curl_exec($ch);
+    curl_close($ch);
 
     header("Location: /php/welcome.php");
     exit;
