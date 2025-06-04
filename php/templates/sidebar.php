@@ -1,16 +1,31 @@
 <?php
-// Initialize selected_file_type if not set
-if (!isset($_SESSION['selected_file_type'])) {
-    $_SESSION['selected_file_type'] = '';
-}
 
-$drives = [
-    ['name' => 'Google Drive 1', 'connected' => true],
-    ['name' => 'Google Drive 2', 'connected' => false],
-    ['name' => 'Dropbox 1', 'connected' => true],
-    ['name' => 'Dropbox 2', 'connected' => true],
-];
+
+require_once __DIR__ . '/../db.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /../../login.php");
+    exit;
+}
+$user_id = $_SESSION['user_id'];
+
+function getConnectedDrives($userId) {
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("
+            SELECT email, provider FROM cloud_accounts WHERE user_id = ? ORDER BY provider DESC");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+        error_log("Error fetching drives: " . $e->getMessage());
+        return [];
+    }
+}
+$connectedDrives = getConnectedDrives($user_id);
+
 ?>
+
+
 <button id="sidebar-toggle" class="sidebar-toggle">
     <span class="toggle-icon"></span>
 </button>
@@ -40,16 +55,45 @@ $drives = [
     
     <div class="divider"></div>
     
+    <div class="cloud-services">
+        <h3>Connect Services</h3>
+        <div class="service-buttons">
+           <a href="cloud/drive.php" class="service-btn google-drive">
+                <img src="../../assets/google_drive_icon.png" alt="Google Drive" class="service-icon">
+                </a>
+            <a href="cloud/dropbox.php" class="service-btn dropbox">
+                <img src="../../assets/dropbox_icon.png" alt="Dropbox" class="service-icon">
+                 </a>
+            <a href="cloud/box.php" class="service-btn box">
+                <img src="../../assets/box_icon.png" alt="Box" class="service-icon">
+                </a>
+        </div>
+    </div>
+    
+   <div class="divider"></div>
+    
     <div class="connections-menu">
         <h3>Connected Drives</h3>
-        <ul class="drives-list">
-            <?php foreach ($drives as $drive): ?>
-            <li class="drive-item">
-                <span class="connection-status <?php echo $drive['connected'] ? 'connected' : 'disconnected'; ?>"></span>
-                <?php echo htmlspecialchars($drive['name']); ?>
-            </li>
-            <?php endforeach; ?>
-        </ul>
+        <div class="drives-container">
+            <?php if (empty($connectedDrives)): ?>
+                <div class="no-drives">
+                    No connected drives yet.<br>
+                    Connect a service above to get started.
+                </div>
+            <?php else: ?>
+                <ul class="drives-list">
+                    <?php foreach ($connectedDrives as $drive): ?>
+                    <li class="drive-item">
+                        <div class="drive-header">
+                            <span class="connection-status connected"></span>
+                            <span class="drive-name"><?php echo htmlspecialchars($drive['provider']); ?></span>
+                        </div>
+                        <div class="drive-email"><?php echo htmlspecialchars($drive['email']); ?></div>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </div>
     </div>
 </aside>
 
@@ -84,6 +128,15 @@ window.addEventListener('resize', function() {
     }
 });
 
+document.querySelectorAll('.view-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+
+
 function updateFileType(type) {
     // Remove active class from all buttons
     document.querySelectorAll('.view-btn, .file-type-btn').forEach(btn => {
@@ -110,4 +163,7 @@ function updateFileType(type) {
         window.location.reload();
     });
 }
+
 </script> 
+
+

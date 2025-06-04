@@ -9,7 +9,7 @@ require_once __DIR__ . '/../db.php';
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input || !isset($input['account_id'], $input['access_token'], $input['email'])) {
-    exit;
+    die("No account id/access token/email provided");
 }
 
 $account_id = $input['account_id'];
