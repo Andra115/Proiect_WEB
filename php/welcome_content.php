@@ -34,7 +34,38 @@ $totalMB = number_format($totalBytes / (1024 * 1024), 2);
                     <div class="file-item">
                         <div class="file-info">
                             <div class="file-name-section">
-                                <img src="../assets/file.png" alt="File" class="file-icon">
+                                <?php
+                                $type = rtrim($file['file_type']);
+                                switch ($type) {
+                                    case 'image':
+                                        $icon = '../assets/image.png';
+                                        break;
+                                    case 'pdf':
+                                        $icon = '../assets/pdf.png';
+                                        break;
+                                    case 'document':
+                                        $icon = '../assets/document.png';
+                                        break;
+                                    case 'spreadsheet':
+                                        $icon = '../assets/spreadsheet.png';
+                                        break;
+                                    case 'presentation':
+                                        $icon = '../assets/presentation.png';
+                                        break;
+                                    case 'audio':
+                                        $icon = '../assets/audio.png';
+                                        break;
+                                    case 'video':
+                                        $icon = '../assets/video.png';
+                                        break;
+                                    case 'archive':
+                                        $icon = '../assets/archive.png';
+                                        break;
+                                    default:
+                                        $icon = '../assets/file.png';
+                                }
+                                ?>
+                                <img src="<?php echo $icon; ?>" alt="File" class="file-icon">
                                 <span class="file-name"><?php echo htmlspecialchars($file['file_name']); ?></span>
                             </div>
                             <span class="file-date"><?php echo date('M j, Y, g:i A', strtotime($file['uploaded_at'])); ?></span>

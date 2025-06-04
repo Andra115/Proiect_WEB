@@ -608,47 +608,54 @@ input.loginFormItem {
 
 .files-header .file-info {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
     width: 100%;
-    margin: 0;
-    padding: 0;
-}
-
-.file-name {
-    font-family: 'Lemon', serif;
-    font-size: 1em;
-    color: #1c0856;
-}
-
-.file-date {
-    font-family: 'Lemon', serif;
-    font-size: 0.9em;
-    color: #666;
-    margin-left: auto;
 }
 
 .file-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
     background: white;
     padding: 15px 20px;
     border-radius: 10px !important;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    width: 100%;
     margin: 0;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
 }
 
 .file-name-section {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex: 1 1 0;
+    min-width: 0;
 }
 
-.file-icon {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
+.file-name {
+    font-family: 'Lemon', serif;
+    font-size: 1em;
+    color: #1c0856;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-date {
+    font-family: 'Lemon', serif;
+    font-size: 0.9em;
+    color: #666;
+    white-space: nowrap;
+    margin-left: 24px;
+    flex-shrink: 0;
 }
 
 .no-files {
@@ -667,6 +674,16 @@ h2 {
 #profile-username {
     font-family: 'Lemon', serif;
     font-size: 0.9em;
+}
+
+.file-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    margin-right: 8px;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 @media (max-width: 768px) {
