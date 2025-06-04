@@ -1,8 +1,11 @@
 <?php
 require_once 'db.php';
 $userId = $_SESSION['user_id'];
-$stmt = $pdo->prepare('SELECT * FROM get_user_files(:user_id)');
-$stmt->execute(['user_id' => $userId]);
+$fileType = isset($_SESSION['selected_file_type']) ? $_SESSION['selected_file_type'] : '';
+$searchedFileName = isset($_SESSION['searched_file_name']) ? $_SESSION['searched_file_name'] : '';
+
+$stmt = $pdo->prepare('SELECT * FROM get_user_files(:user_id, :type, :searched_file_name)');
+$stmt->execute(['user_id' => $userId, 'type' => $fileType, 'searched_file_name' => $searchedFileName]);
 $files = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $totalFiles = count($files);
@@ -28,7 +31,7 @@ $totalMB = number_format($totalBytes / (1024 * 1024), 2);
         </div>
         <div class="files-list">
             <?php if (empty($files)): ?>
-                <div class="no-files">No files uploaded yet</div>
+                <div class="no-files">No files found</div>
             <?php else: ?>
                 <?php foreach ($files as $file): ?>
                     <div class="file-item">

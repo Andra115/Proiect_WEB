@@ -220,26 +220,39 @@ input.loginFormItem {
 .view-options {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .view-btn {
     font-family: 'Lemon', serif;
-    background: white;
+    background-color: white;
     border: none;
     color: #1c0856;
     padding: 10px;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 0.9em;
     width: 100%;
-    margin-bottom: 5px;
+    transition: all 0.2s ease;
+    box-shadow: none;
+    outline: none;
 }
 
-.view-btn.active,
 .view-btn:hover {
-    background: white;
+    background-color: #f0f0f0;
+}
+
+.view-btn.active {
+    background-color: white;
     color: #1c0856;
+}
+
+button.view-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.view-options .view-btn:hover {
+    background-color: #f0f0f0;
 }
 
 .divider {
@@ -310,16 +323,53 @@ input.loginFormItem {
     flex-grow: 1;
     max-width: 600px;
     margin: 0 20px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+    height: 100%;
 }
 
 .search-bar {
     font-family: 'Lemon', serif;
     width: 100%;
-    padding: 10px 20px;
+    padding: 5px 20px;
     border: 1px solid #ddd;
     border-radius: 50px;
     font-size: 0.9em;
     background: white;
+    height: 32px;
+}
+
+.search-button {
+    background: #1c0856;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.2s;
+    margin-top: -0.5px;
+}
+
+.search-button:hover {
+    background: #160643;
+}
+
+.search-icon {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1);
 }
 
 .profile-section {
@@ -855,4 +905,54 @@ h2 {
     margin: 0;
     padding: 0;
     margin-top: 2px;
+}
+
+.file-types-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+    margin-top: 0;
+}
+
+.file-types-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+}
+
+.file-type-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+}
+
+.file-type-btn:hover {
+    background: #f0f0f0;
+}
+
+.file-type-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.file-type-btn span {
+    font-size: 0.7em;
+    font-family: 'Lemon', serif;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
