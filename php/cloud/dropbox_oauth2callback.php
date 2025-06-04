@@ -74,11 +74,7 @@ if (isset($_GET['code'])) {
         $refresh_token = $token['refresh_token'] ?? null;
         $token_expiry = time() + ($token['expires_in'] ?? 14400); //this one has 4 hours apparently compared to the other two, revolutionary really
 
-        var_dump($access_token);
-
-
     
-
         $ch = curl_init("https://api.dropboxapi.com/2/users/get_current_account");
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -96,7 +92,7 @@ if (isset($_GET['code'])) {
     
         $email = $user_info['email'] ?? null;
         if (!$email) {
-            die("Failed to retrieve Dropbox email. Response: " . htmlspecialchars(json_encode($user_info)));
+            die("Failed to retrieve dropbox email.");
         }
 
         
@@ -114,8 +110,8 @@ if (isset($_GET['code'])) {
         $total_space = $allocation['allocated'] ?? 2147483648; //it should be able to get this info but in case it doesnt we ll assume 2GB free plan
         
        
-        $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'dropbox'");
-        $stmt->execute([$email]);
+        $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'dropbox' AND user_id = ?");
+        $stmt->execute([$email, $user_id]);
         $account_result = $stmt->fetch(PDO::FETCH_ASSOC);
         $account_id = $account_result ? $account_result['account_id'] : null;
         $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry);
@@ -131,12 +127,12 @@ if (isset($_GET['code'])) {
                 $total_space, 
                 $space_available  
             ]);
-            $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'dropbox'");
-            $stmt->execute([$email]);
+            $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'dropbox' AND user_id = ?");
+            $stmt->execute([$email, $user_id]);
             $account_id = $stmt->fetchColumn();
         } else {
-            $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space= ?, space_available=?, access_token = ?, token_expiry = ? WHERE email = ? AND provider = 'dropbox'");
-            $stmt->execute([$total_space, $space_available, $access_token, $token_expiry_formatted, $email]);
+            $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space= ?, space_available=?, access_token = ?, token_expiry = ? WHERE email = ? AND provider = 'dropbox' AND user_id = ?");
+            $stmt->execute([$total_space, $space_available, $access_token, $token_expiry_formatted, $email, $user_id]);
         }
        
         $sync_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/sync_files.php';
@@ -151,7 +147,7 @@ if (isset($_GET['code'])) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $sync_data);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 50);
         curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
         curl_exec($ch);
         curl_close($ch);

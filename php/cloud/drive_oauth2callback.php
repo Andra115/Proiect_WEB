@@ -15,6 +15,7 @@ $client->setAuthConfig(__DIR__ . '/../../driver_credentials.json');
 $client->addScope(Google\Service\Drive::DRIVE); 
 $client->addScope('https://www.googleapis.com/auth/userinfo.email');
 $client->addScope('https://www.googleapis.com/auth/userinfo.profile'); 
+$client->addScope('https://www.googleapis.com/auth/drive');
 $client->setAccessType('offline'); 
 $client->setPrompt('consent');
 
@@ -72,8 +73,8 @@ if (isset($_GET['code'])) {
         
 
 
-    $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'google'");
-    $stmt->execute([$email]);
+    $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'google' AND user_id = ?");
+    $stmt->execute([$email,$user_id]);
     $account_result = $stmt->fetch(PDO::FETCH_ASSOC);
     $account_id = $account_result ? $account_result['account_id'] : null;
 
@@ -93,16 +94,17 @@ if (isset($_GET['code'])) {
             $total_space, 
             $space_available
         ]);
-        $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'google'");
-        $stmt->execute([$email]);
+        $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'google' AND user_id = ?");
+        $stmt->execute([$email,$user_id]);
         $account_id = $stmt->fetchColumn();
     } else {
-        $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space = ?, available_space = ?, access_token = ?, token_expiry = ? WHERE email = ? AND provider = 'google'");
-        $stmt->execute([$total_space,$space_available,$access_token, $token_expiry_formatted, $email]);
+        $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space = ?, space_available = ?, access_token = ?, token_expiry = ? WHERE email = ? AND provider = 'google' AND user_id = ?");
+        $stmt->execute([$total_space,$space_available,$access_token, $token_expiry_formatted, $email, $user_id]);
     }
 
+
     
-    $sync_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/sync_files.php';
+  $sync_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/sync_files.php';
     $sync_data = json_encode([
         'account_id' => $account_id,
         'access_token' => $access_token,
@@ -115,7 +117,7 @@ if (isset($_GET['code'])) {
     curl_setopt($ch, CURLOPT_POSTFIELDS, $sync_data);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 50);
     curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
     curl_exec($ch);
     curl_close($ch);

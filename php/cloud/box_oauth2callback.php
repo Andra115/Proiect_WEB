@@ -77,8 +77,8 @@ if (isset($token['access_token']) && $http_code === 200) {
         die('Error while trying to retrieve email');
     }
 
-    $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box'");
-    $stmt->execute([$email]);
+    $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box' AND user_id = ?");
+    $stmt->execute([$email, $user_id]);
     $account_result = $stmt->fetch(PDO::FETCH_ASSOC);
     $account_id = $account_result ? $account_result['account_id'] : null;
 
@@ -99,36 +99,34 @@ if (isset($token['access_token']) && $http_code === 200) {
             10737418240,
             10737418240
         ]);
-        $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box'");
-        $stmt->execute([$email]);  
+        $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box' AND user_id = ?");
+        $stmt->execute([$email, $user_id]);
         $account_id = $stmt->fetchColumn(); 
         
     } else {
-        $stmt = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry=? WHERE email = ? AND provider = 'box'");
-        $stmt->execute([$access_token,$token_expiry_formatted, $email]);
+        $stmt = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry=? WHERE email = ? AND provider = 'box' AND user_id = ?");
+        $stmt->execute([$access_token,$token_expiry_formatted, $email, $user_id]);
     }
 
 
-
+   $sync_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/sync_files.php';
+        $sync_data = json_encode([
+            'account_id' => $account_id,
+            'access_token' => $access_token,
+            'email' => $email,
+            'provider' => 'box'
+        ]);
+        $ch = curl_init($sync_url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $sync_data);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+        curl_exec($ch);
+        curl_close($ch);
     
-    $sync_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/sync_files.php';
-    $sync_data = json_encode([
-        'account_id' => $account_id,
-        'access_token' => $access_token,
-        'email' => $email,
-        'provider' => 'box'
-    ]);
-  
-    $ch = curl_init($sync_url);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $sync_data);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-    curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
-    
-    curl_exec($ch);
-    curl_close($ch);
+ 
 
     header("Location: /php/welcome.php");
     exit;

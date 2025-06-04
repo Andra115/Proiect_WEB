@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $loginSuccess = $stmt->fetchColumn();
 
             if ($loginSuccess) {
-                session_start();
+               
                 $key = "Aceasta este o cheie supersecreta";
                 $iss_time = time();
                 $userIdStmt = $pdo->prepare('SELECT user_id FROM users WHERE email = :email');

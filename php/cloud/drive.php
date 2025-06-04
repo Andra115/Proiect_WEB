@@ -7,7 +7,8 @@ $client = new Google_Client();
 $client->setAuthConfig(__DIR__ . '/../../driver_credentials.json');
 $client->addScope(\Google\Service\Drive::DRIVE_FILE);
 $client->addScope('https://www.googleapis.com/auth/userinfo.email');
-$client->addScope('https://www.googleapis.com/auth/userinfo.profile'); 
+$client->addScope('https://www.googleapis.com/auth/userinfo.profile');
+$client->addScope('https://www.googleapis.com/auth/drive'); 
 $client->setAccessType('offline');
 $client->setPrompt('consent');
 
