@@ -1,7 +1,25 @@
 <?php
-$totalStorage = 1024;
-$usedStorage = 614;
-$percentageUsed = ($usedStorage / $totalStorage) * 100;
+require_once __DIR__ . '/../db.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /../../login.php");
+    exit;
+}
+$user_id = $_SESSION['user_id'];
+
+$stmt = $pdo->prepare("SELECT * FROM get_user_storage(:user_id)");
+$stmt->execute(['user_id' => $user_id]);
+$storage = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$total_storage= $storage['total_storage'];
+$space_available = $storage['total_available'];
+$used_storage = $total_storage-$space_available;
+
+$total_storage_gb = $total_storage / (1024 ** 3);
+$space_available_gb = $space_available / (1024 ** 3);
+$used_storage_gb = $used_storage / (1024 ** 3);
+
+$percentageUsed = ($used_storage_gb / $total_storage_gb) * 100;
 ?>
 <footer class="main-footer">
     <div class="storage-info">
@@ -9,7 +27,7 @@ $percentageUsed = ($usedStorage / $totalStorage) * 100;
             <div class="storage-bar" style="width: <?php echo $percentageUsed; ?>%"></div>
         </div>
         <div class="storage-text">
-            <?php echo $usedStorage; ?>GB used of <?php echo $totalStorage; ?>GB
+            <?php echo round($used_storage_gb, 3); ?>GB used of <?php echo round($total_storage_gb, 3); ?>GB
         </div>
     </div>
 </footer> 
