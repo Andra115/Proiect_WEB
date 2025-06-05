@@ -212,4 +212,6 @@ try {
         }
     }
 } catch (Exception $e) {
+    error_log("Error syncing files: " . $e->getMessage());
+    die("Error syncing files: " . $e->getMessage());
 }

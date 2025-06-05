@@ -77,6 +77,7 @@ if (isset($token['access_token']) && $http_code === 200) {
         die('Error while trying to retrieve email');
     }
 
+try{
     $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box' AND user_id = ?");
     $stmt->execute([$email, $user_id]);
     $account_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -108,6 +109,9 @@ if (isset($token['access_token']) && $http_code === 200) {
         $stmt = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry=? WHERE email = ? AND provider = 'box' AND user_id = ?");
         $stmt->execute([$access_token,$token_expiry_formatted, $email, $user_id]);
     }
+} catch (Exception $e) {
+    die('Database error: ' . $e->getMessage());
+}
 
 
  $sync_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/sync_files.php';

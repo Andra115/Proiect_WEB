@@ -72,7 +72,7 @@ if (isset($_GET['code'])) {
     $used = $user_storage_info->getUsage() ?? 0;
         
 
-
+try{
     $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'google' AND user_id = ?");
     $stmt->execute([$email,$user_id]);
     $account_result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -101,7 +101,9 @@ if (isset($_GET['code'])) {
         $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space = ?, space_available = ?, access_token = ?, token_expiry = ? WHERE email = ? AND provider = 'google' AND user_id = ?");
         $stmt->execute([$total_space,$space_available,$access_token, $token_expiry_formatted, $email, $user_id]);
     }
-
+} catch (Exception $e) {
+    die('Database error: ' . $e->getMessage());
+}
 
     
     $sync_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/sync_files.php';
