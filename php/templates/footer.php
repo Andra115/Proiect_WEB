@@ -7,9 +7,13 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = $_SESSION['user_id'];
 
+try{
 $stmt = $pdo->prepare("SELECT * FROM get_user_storage(:user_id)");
 $stmt->execute(['user_id' => $user_id]);
 $storage = $stmt->fetch(PDO::FETCH_ASSOC);
+}catch (PDOException $e) {
+    die("Database error: " . $e->getMessage());
+}
 
 $total_storage= $storage['total_storage'];
 $space_available = $storage['total_available'];

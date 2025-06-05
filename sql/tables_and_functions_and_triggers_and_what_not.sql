@@ -303,6 +303,9 @@ CREATE OR REPLACE TRIGGER trg_infer_file_type
     ON public.files
     FOR EACH ROW
     EXECUTE FUNCTION public.infer_file_type();
+
+
+
 CREATE OR REPLACE FUNCTION public.distribute_file_chunks()
     RETURNS trigger
     LANGUAGE plpgsql
