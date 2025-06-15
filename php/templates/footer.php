@@ -31,7 +31,7 @@ $percentageUsed = ($used_storage_gb / $total_storage_gb) * 100;
             <div class="storage-bar" style="width: <?php echo $percentageUsed; ?>%"></div>
         </div>
         <div class="storage-text">
-            <?php echo round($used_storage_gb, 3); ?>GB used of <?php echo round($total_storage_gb, 3); ?>GB
+            <?php echo round($used_storage_gb, 3); ?>GB of <?php echo round($total_storage_gb, 3); ?>GB used
         </div>
     </div>
 </footer> 
