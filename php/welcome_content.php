@@ -15,12 +15,14 @@ $totalMB = number_format($totalBytes / (1024 * 1024), 2);
 <div class="welcome-content">
     <h2>Cloud9 Storage Dashboard</h2>
     
-    <div class="storage-card">
-        <h3>Quick Stats</h3>
-        <ul>
-            <li>Total Files: <?php echo $totalFiles; ?></li>
-            <li>Storage Used: <?php echo $totalMB; ?> MB</li>
-        </ul>
+    <div class="stats-container">
+        <div class="storage-card">
+            <h3>Quick Stats</h3>
+            <ul>
+                <li>Total Files: <?php echo $totalFiles; ?></li>
+                <li>Storage Used: <?php echo $totalMB; ?> MB</li>
+            </ul>
+        </div>
     </div>
     <div class="files-container">
         <div class="files-header">

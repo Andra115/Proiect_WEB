@@ -114,24 +114,13 @@ try{
 }
 
 
- $sync_url = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/sync_files.php';
-    $sync_data = json_encode([
-        'account_id' => $account_id,
-        'access_token' => $access_token,
-        'email' => $email,
-        'provider' => 'box'
-    ]);
-  
-    $ch = curl_init($sync_url);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $sync_data);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-    curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
-    
-    curl_exec($ch);
-    curl_close($ch);
+    $_SESSION['pending_sync'] = [
+            'account_id' => $account_id,
+            'access_token' => $access_token,
+            'email' => $email,
+            'provider' => 'box',
+            'user_id' => $user_id
+        ];
     
  
 

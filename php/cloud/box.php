@@ -24,3 +24,4 @@ $auth_url = "https://account.box.com/api/oauth2/authorize?$params";
 
 header("Location: $auth_url");
 exit;
+?>

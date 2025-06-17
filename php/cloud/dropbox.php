@@ -1,15 +1,7 @@
 <?php
 session_start();
 
-$creds_file = __DIR__ . '/../../dropbox_credentials.json';
-if (!file_exists($creds_file)) {
-    die('Credentials file not found');
-}
-
-$creds = json_decode(file_get_contents($creds_file), true);
-if (!$creds) {
-    die('Invalid credentials file');
-}
+$creds = json_decode(file_get_contents(__DIR__ . '/../../dropbox_credentials.json'), true);
 
 $client_id = $creds['client_id'];
 $client_secret = $creds['client_secret'];
@@ -30,6 +22,6 @@ $auth_url = 'https://www.dropbox.com/oauth2/authorize?' . http_build_query([
     'force_reapprove' => 'true'
 ]);
 
-header('Location: ' . $auth_url);
+header("Location: $auth_url");
 exit;
 ?>

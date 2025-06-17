@@ -86,6 +86,74 @@ $content = 'welcome_content.php';
         };
         
         document.addEventListener('DOMContentLoaded', updateUsername);
+
+        document.addEventListener('DOMContentLoaded', function() {
+           
+            <?php if (isset($_SESSION['pending_sync'])): ?>
+            const syncData = <?php echo json_encode($_SESSION['pending_sync']); ?>;
+            
+           
+            const quickStatsHeading = document.querySelector('.storage-card h3');
+            if (quickStatsHeading) {
+                const syncText = document.createElement('span');
+                syncText.className = 'sync-text-inline';
+                syncText.textContent = ' - Syncing Files...';
+                
+                quickStatsHeading.appendChild(syncText);
+            }
+
+            fetch('cloud/sync_files.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(syncData)
+            })
+            .then(response => response.json())
+            .then(data => {
+              
+                const syncText = document.querySelector('.sync-text-inline');
+                if (syncText) {
+                    if (data.success) {
+                        syncText.textContent = ' - ' + data.message;
+                        syncText.className = 'sync-text-inline sync-success';
+                    } else {
+                        syncText.textContent = ' - Sync failed: ' + (data.message || 'Unknown error');
+                        syncText.className = 'sync-text-inline sync-error';
+                    }
+                    
+                    
+                    setTimeout(() => {
+                        if (syncText && syncText.parentNode) {
+                            syncText.remove();
+                        }
+                    }, 10000); //it dissapears after 10 secs cause i feel like there s no need for it to sstay longer
+                }
+                
+                if (typeof loadFiles === 'function') {
+                    loadFiles();
+                }
+            })
+            .catch(error => {
+               
+                const syncText = document.querySelector('.sync-text-inline');
+                if (syncText) {
+                    syncText.textContent = ' - Sync failed: ' + error.message;
+                    syncText.className = 'sync-text-inline sync-error';
+                    
+                   
+                    setTimeout(() => {
+                        if (syncText && syncText.parentNode) {
+                            syncText.remove();
+                        }
+                    }, 10000);
+                }
+            })
+            .finally(() => {
+                <?php unset($_SESSION['pending_sync']); ?>
+            });
+            <?php endif; ?>
+        });
     </script>
 </body>
 </html>

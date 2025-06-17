@@ -200,7 +200,6 @@ input.loginFormItem {
     position: fixed;
     width: 250px;
     height: 100vh;
-    overflow-y: auto;
     z-index: 900;
 }
 
@@ -263,6 +262,34 @@ button.view-btn:hover {
 
 .connections-menu {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.drives-container {
+    max-height: 300px;
+    overflow-y: auto;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.drives-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.drives-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.drives-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.drives-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .drives-list {
@@ -500,6 +527,80 @@ button.view-btn:hover {
     bottom: -6px;
 }
 
+.cloud-services {
+    margin-bottom: 20px;
+}
+
+.cloud-services h3 {
+    font-family: 'Lemon', serif;
+    font-size: 0.9em;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.service-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.service-btn {
+    flex: 1;
+    background: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    min-height: 48px;
+}
+
+.service-btn:hover {
+    border-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.15);
+}
+
+.service-icon {
+    width: 24px;
+    height: 24px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.drive-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.drive-name {
+    font-family: 'Lemon', serif;
+    font-size: 0.9em;
+    color: white;
+}
+
+.drive-email {
+    font-family: 'Lemon', serif;
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.7);  
+    margin-left: 16px;
+}
+
+.no-drives {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    padding: 20px;
+    font-family: 'Lemon', serif;
+    font-size: 0.8em;
+}
+
 .sidebar-toggle.active .toggle-icon {
     background: transparent;
 }
@@ -605,18 +706,26 @@ button.view-btn:hover {
 }
 
 .storage-card {
-    background: white;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
     padding: 20px;
-    border-radius: 10px !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 20px;
-    width: 100%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stats-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
 .storage-card h3 {
-    color: #1c0856;
+    margin-top: 0;
     margin-bottom: 15px;
-    font-family: 'Lemon', serif;
+    color: #333;
+    font-size: 1.2em;
 }
 
 .storage-card ul {
@@ -956,3 +1065,25 @@ h2 {
     text-overflow: ellipsis;
     width: 100%;
 }
+
+
+.sync-text-inline {
+    font-size: 1em;
+    color: #333;
+    font-weight: 500;
+    font-family: 'Lemon', serif;
+    vertical-align: baseline;
+}
+
+.sync-text-inline.sync-success {
+    color: #1d632d;
+}
+
+.sync-text-inline.sync-error {
+    color: #5a0e16;
+}
+
+
+
+
+

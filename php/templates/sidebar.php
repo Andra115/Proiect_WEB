@@ -58,15 +58,15 @@ $connectedDrives = getConnectedDrives($user_id);
     <div class="cloud-services">
         <h3>Connect Services</h3>
         <div class="service-buttons">
-           <a href="cloud/drive.php" class="service-btn google-drive">
+            <a href="cloud/drive.php" class="service-btn google-drive" role="button">
                 <img src="../../assets/google_drive_icon.png" alt="Google Drive" class="service-icon">
-                </a>
-            <a href="cloud/dropbox.php" class="service-btn dropbox">
+            </a>
+            <a href="cloud/dropbox.php" class="service-btn dropbox" role="button">
                 <img src="../../assets/dropbox_icon.png" alt="Dropbox" class="service-icon">
-                 </a>
-            <a href="cloud/box.php" class="service-btn box">
+            </a>
+            <a href="cloud/box.php" class="service-btn box" role="button">
                 <img src="../../assets/box_icon.png" alt="Box" class="service-icon">
-                </a>
+            </a>
         </div>
     </div>
     
@@ -138,19 +138,19 @@ document.querySelectorAll('.view-btn').forEach(button => {
 
 
 function updateFileType(type) {
-    // Remove active class from all buttons
+ 
     document.querySelectorAll('.view-btn, .file-type-btn').forEach(btn => {
         btn.classList.remove('active');
     });
 
-    // Add active class to clicked button
+   
     if (type === '') {
         document.querySelector('.view-btn').classList.add('active');
     } else {
         event.currentTarget.classList.add('active');
     }
 
-    // Send AJAX request to update session
+
     fetch('update_file_type.php', {
         method: 'POST',
         headers: {
@@ -159,7 +159,7 @@ function updateFileType(type) {
         body: JSON.stringify({ type: type })
     })
     .then(() => {
-        // Reload the page to show filtered results
+     
         window.location.reload();
     });
 }
