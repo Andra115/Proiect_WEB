@@ -71,73 +71,77 @@ function listAllBoxFiles($access_token, $folderId = '0')
 }
 
 
-function listAllDropboxFiles($access_token)
+function listAllDropboxFiles($access_token, $cursor = null)
 {
     $files = [];
-    $cursor = null;
-    
-    do {
-        $ch = curl_init('https://api.dropboxapi.com/2/files/list_folder' . ($cursor ? '/continue' : ''));
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Authorization: Bearer $access_token",
-            "Content-Type: application/json"
-        ]);
-        
-        $post_data = $cursor ? ['cursor' => $cursor] : ['path' => '', 'recursive' => true];
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
-        $response = curl_exec($ch);
-        curl_close($ch);
-        
-        $data = json_decode($response, true);
-        if (!isset($data['entries'])) break;
-        
-        foreach ($data['entries'] as $item) {
-            if ($item['.tag'] === 'file') {
-                $path_parts = pathinfo($item['name']);
-                $files[] = [
-                    'id' => $item['id'],
-                    'name' => $item['name'],
-                    'size' => $item['size'],
-                    'created_at' => $item['server_modified'],
-                    'extension' => $path_parts['extension'] ?? 'unknown',
-                    'type' => 'file'
-                ];
-            }
+
+    $url = $cursor === null
+        ? 'https://api.dropboxapi.com/2/files/list_folder'
+        : 'https://api.dropboxapi.com/2/files/list_folder/continue';
+
+    $postFields = $cursor === null
+        ? json_encode(['path' => '', 'recursive' => true, 'include_media_info' => false])
+        : json_encode(['cursor' => $cursor]);
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: Bearer $access_token",
+        "Content-Type: application/json"
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $data = json_decode($response, true);
+    if (!isset($data['entries'])) return $files;
+
+    foreach ($data['entries'] as $entry) {
+        if ($entry['.tag'] === 'file') {
+            $path_parts = pathinfo($entry['name']);
+            $files[] = [
+                'id' => $entry['id'],
+                'name' => $entry['name'],
+                'size' => $entry['size'],
+                'created_at' => $entry['client_modified'],
+                'extension' => $path_parts['extension'] ?? 'unknown',
+                'type' => 'file'
+            ];
         }
-        
-        $cursor = $data['cursor'] ?? null;
-        $has_more = $data['has_more'] ?? false;
-    } while ($has_more);
-    
+    }
+
+    if (!empty($data['has_more']) && isset($data['cursor'])) {
+        $files = array_merge($files, listAllDropboxFiles($access_token, $data['cursor']));
+    }
+
     return $files;
 }
 
 
 
-function listAllGoogleDriveFiles($access_token, $folderId = 'root') {
+function listAllGoogleDriveFiles($access_token, $folderId = 'root')
+{
     $files = [];
     $pageToken = null;
-    
+
     do {
         $url = "https://www.googleapis.com/drive/v3/files?q='" . $folderId . "' in parents and trashed = false"
-              . "&fields=nextPageToken, files(id, name, mimeType, size, createdTime)"
-              . ($pageToken ? "&pageToken=" . $pageToken : "");
-        
-        $ch = curl_init($url);
+             . "&fields=nextPageToken, files(id, name, mimeType, size, createdTime)"
+             . ($pageToken ? "&pageToken=" . $pageToken : "");
+
+        $ch = curl_init("https://www.googleapis.com/drive/v3/files?q=" . urlencode("'" . $folderId . "' in parents and trashed=false") . "&fields=nextPageToken,files(id,name,mimeType,size,createdTime)" . ($pageToken ? "&pageToken=" . $pageToken : ""));
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             "Authorization: Bearer $access_token"
         ]);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
+
         $response = curl_exec($ch);
         curl_close($ch);
-        
+
         $data = json_decode($response, true);
         if (!isset($data['files'])) return $files;
-        
+
         foreach ($data['files'] as $item) {
             if ($item['mimeType'] !== 'application/vnd.google-apps.folder') {
                 $path_parts = pathinfo($item['name']);
@@ -153,10 +157,10 @@ function listAllGoogleDriveFiles($access_token, $folderId = 'root') {
                 $files = array_merge($files, listAllGoogleDriveFiles($access_token, $item['id']));
             }
         }
-        
+
         $pageToken = $data['nextPageToken'] ?? null;
     } while ($pageToken);
-    
+
     return $files;
 }
 
@@ -204,6 +208,9 @@ try {
             }
         }
     }
+    
+  
+
 
     $stmt = $pdo->prepare("SELECT file_id FROM files WHERE file_name LIKE ? AND account_id = ?");
     $insert = $pdo->prepare("INSERT INTO file_chunks (file_id, account_id, chunk_index, chunk_size, nr_of_chunks, chunk_file_id) VALUES (?, ?, ?, ?, ?, ?)");
@@ -226,9 +233,30 @@ try {
         }
     }
 
+
+      //deleting file chunks if they are not in the cloud and we ll give an error later if the user tries to download or sth
+    $stmtDeleteChunks = $pdo->prepare("DELETE FROM file_chunks WHERE account_id = ? AND chunk_file_id = ?");
+    $deletedFiles = 0;
+
+    $cloudFileIds = [];
+    foreach ($all_files as $file) {
+        $cloudFileIds[] = $file['id'];
+    }
+
+    foreach ($existingFileIds as $fileId) {
+        if (!in_array($fileId, $cloudFileIds)) {
+           
+            $stmtDeleteChunks->execute([$account_id, $fileId]);
+            $deletedFiles++;
+        }
+    }
+    //deleteing files fi they have no more chunks
+    $stmtDelete=$pdo->prepare("DELETE FROM files f WHERE NOT EXISTS (SELECT 1 FROM file_chunks fc WHERE fc.file_id=f.file_id) AND f.account_id = ?");
+    $stmtDelete->execute([$account_id]);
+
     echo json_encode([
         'success' => true,
-        'message' => "Sync completed. Added $newFiles new files."
+        'message' => "Sync completed. Added $newFiles new files and deleted $deletedFiles files.",
     ]);
 
 } catch (Exception $e) {
