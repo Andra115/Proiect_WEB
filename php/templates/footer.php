@@ -19,11 +19,20 @@ $total_storage= $storage['total_storage'];
 $space_available = $storage['total_available'];
 $used_storage = $total_storage-$space_available;
 
-$total_storage_gb = $total_storage / (1024 ** 3);
-$space_available_gb = $space_available / (1024 ** 3);
-$used_storage_gb = $used_storage / (1024 ** 3);
+if( $total_storage != 0 ) {
+    $total_storage_gb = $total_storage / (1024 ** 3);
+    $space_available_gb = $space_available / (1024 ** 3);
+    $used_storage_gb = $used_storage / (1024 ** 3);
+    $percentageUsed = ($used_storage_gb / $total_storage_gb) * 100;
+   
+}
+else{
+    $percentageUsed = 0;
+    $total_storage_gb = 0;
+    $used_storage_gb = 0;
+}
 
-$percentageUsed = ($used_storage_gb / $total_storage_gb) * 100;
+
 ?>
 <footer class="main-footer">
     <div class="storage-info">

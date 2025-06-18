@@ -1,9 +1,5 @@
 <?php
 
-ignore_user_abort(true);
-set_time_limit(0);
-
-
 require_once __DIR__ . '/../db.php';
 
 header('Content-Type: application/json');
@@ -19,7 +15,7 @@ if (php_sapi_name() === 'cli') {
 
 if (!$input || !isset($input['account_id'], $input['access_token'], $input['email'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'No account id/access token/email provided']);
+    echo json_encode(['error' => 'Error: Invalid input']);
     exit;
 }
 
@@ -254,9 +250,19 @@ try {
     $stmtDelete=$pdo->prepare("DELETE FROM files f WHERE NOT EXISTS (SELECT 1 FROM file_chunks fc WHERE fc.file_id=f.file_id) AND f.account_id = ?");
     $stmtDelete->execute([$account_id]);
 
+    $filesAdded="";
+    if($newFiles > 0) {
+        $filesAdded = " Added $newFiles new files. ";
+    } 
+    
+    $filesDeleted = "";
+    if($deletedFiles > 0) {
+        $filesDeleted = " Deleted $deletedFiles files.";
+    }
+
     echo json_encode([
         'success' => true,
-        'message' => "Sync completed. Added $newFiles new files and deleted $deletedFiles files.",
+        'message' => "Sync completed.$filesAdded$filesDeleted",
     ]);
 
 } catch (Exception $e) {
