@@ -1,6 +1,21 @@
 <?php
 require_once 'db.php';
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
 $userId = $_SESSION['user_id'];
+if(!isset($userId)) {
+   try {
+    $key = "Aceasta este o cheie supersecreta";
+    $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+    $userId = $decoded->user_id;
+}
+catch (Exception $e) {
+    header("Location: /../../login.php");
+    exit;
+   }
+}
 $fileType = isset($_SESSION['selected_file_type']) ? $_SESSION['selected_file_type'] : '';
 $searchedFileName = isset($_SESSION['searched_file_name']) ? $_SESSION['searched_file_name'] : '';
 
@@ -43,9 +58,9 @@ $totalMB = number_format($totalBytes / (1024 * 1024), 2);
                                         &#x22EE;
                                     </button>
                                     <div class="file-menu">
-                                        <button class="file-menu-option" onclick="renameFile('<?php echo $file['file_id']; ?>')">Rename</button>
-                                        <button class="file-menu-option" onclick="deleteFile('<?php echo $file['file_id']; ?>')">Delete</button>
-                                        <button class="file-menu-option" onclick="downloadFile('<?php echo $file['file_id']; ?>')">Download</button>
+                                        <button class="file-menu-option" onclick="renameFile('<?php echo $file['file_id']; ?>', '<?php echo $userId; ?>')">Rename</button>
+                                        <button class="file-menu-option" onclick="deleteFile('<?php echo $file['file_id']; ?>', '<?php echo $userId; ?>')">Delete</button>
+                                        <button class="file-menu-option" onclick="downloadFile('<?php echo $file['file_id']; ?>', '<?php echo $userId; ?>')">Download</button>
                                     </div>
                                 </div>
                                 <?php
@@ -105,13 +120,89 @@ document.addEventListener('click', function(e) {
     }
 });
 
-function renameFile(fileId) {
-    alert('Rename file: ' + fileId);
+function renameFile(fileId,userId) {
+    const newName = prompt('Enter new file name:');
+    if (!newName) {
+        alert('File name cannot be empty.');
+        return;
+    }
+    if(!userId) {
+        alert('User ID is required.');
+        return;
+    }
+    fetch('rename.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ file_id: fileId, new_name: newName, user_id: userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('File renamed successfully!');
+           
+        } else {
+            alert('Error renaming file: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('AJAX error: ' + error);
+    });
 }
-function deleteFile(fileId) {
-    alert('Delete file: ' + fileId);
+
+
+function deleteFile(fileId,userId) {
+   
+    if(!userId) {
+        alert('User ID is required.');
+        return;
+    }
+    fetch('delete.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ file_id: fileId, user_id: userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('File deleted successfully!');
+           
+        } else {
+            alert('Error deleting file: ' + data.message + ' ' + data.error + ' ' + data.http_code + ' ' + data.chunk_file_id + ' ' + data.provider + ' ' + data.account_info + ' ' + data.entered);
+        }
+    })
+    .catch(error => {
+        alert('AJAX error: ' + error);
+    });
 }
-function downloadFile(fileId) {
-    alert('Download file: ' + fileId);
+
+
+function downloadFile(fileId,userId) {
+    if(!userId) {
+        alert('User ID is required.');
+        return;
+    }
+    fetch('download.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ file_id: fileId, user_id: userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('File downloaded successfully!');
+           
+        } else {
+            alert('Error downloading file: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('AJAX error: ' + error);
+    });
 }
 </script> 

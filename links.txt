@@ -7,3 +7,42 @@ http://localhost:8000/php/cloud/dropbox_oauth2callback.php
 
 http://localhost:8000/php/cloud/box.php
 http://localhost:8000/php/cloud/box_oauth2callback.php
+
+
+
+
+<br/><b>Warning</b>:  Undefined array key "client_id" in <b>D:\Andra\college\web\Proiect_WEB\php\rename.php</b>on line<b>130</b>
+<br /><br/><b>Warning</b>:  Undefined array key "client_secret" in <b>D:\Andra\college\web\Proiect_WEB\php\rename.php</b>on line<b>131</b>
+<br /><br/><b>Warning</b>:  Undefined array key "refresh_token" in <b>D:\Andra\college\web\Proiect_WEB\php\rename.php</b>on line<b>139</b><br />{
+    "error": "Database error: SQLSTATE[23502]: Not null violation: 7 ERROR:  null value in column \"access_token\" of relation \"cloud_accounts\" violates not-null constraint\nDETAIL:  Failing row contains (7, 3, google, whiteblade1155@gmail.com, null, null, 2025-06-19 16:16:33, 16106127360, 12683168621)."
+}
+
+
+
+{
+    "error": "Error renaming file on Google Drive: Invalid response",
+    "google_response": "{\n  \"error\": {\n    \"code\": 404,\n    \"message\": \"File not found: 228.\",\n    \"errors\": [\n      {\n        \"message\": \"File not found: 228.\",\n        \"domain\": \"global\",\n        \"reason\": \"notFound\",\n        \"location\": \"fileId\",\n        \"locationType\": \"parameter\"\n      }\n    ]\n  }\n}\n"
+}
+
+
+
+<br/><b>Warning</b>:  Undefined array key "client_id" in <b>D:\Andra\college\web\Proiect_WEB\php\delete.php</b>on line<b>125</b><br /><br/><b>Warning</b>:  Undefined array key "client_secret" in <b>D:\Andra\college\web\Proiect_WEB\php\delete.php</b>on line<b>126</b><br />{
+    "success": false,
+    "message": "Access token refresh failed. Reconnect account.",
+    "token_data": {
+        "error": "invalid_request",
+        "error_description": "Could not determine client ID from request."
+    },
+    "provider": "google",
+    "account_id": 11
+}
+
+
+<br/><b>Warning</b>:  Undefined variable $access_token in <b>D:\Andra\college\web\Proiect_WEB\php\delete.php</b>on line<b>266</b><br />{
+    "success": false,
+    "message": "Google Drive chunk could not be deleted",
+    "dropbox_response": "{\n  \"error\": {\n    \"code\": 401,\n    \"message\": \"Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https:\/\/developers.google.com\/identity\/sign-in\/web\/devconsole-project.\",\n    \"errors\": [\n      {\n        \"message\": \"Login Required.\",\n        \"domain\": \"global\",\n        \"reason\": \"required\",\n        \"location\": \"Authorization\",\n        \"locationType\": \"header\"\n      }\n    ],\n    \"status\": \"UNAUTHENTICATED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com\/google.rpc.ErrorInfo\",\n        \"reason\": \"CREDENTIALS_MISSING\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"method\": \"google.apps.drive.v3.DriveFiles.Delete\",\n          \"service\": \"drive.googleapis.com\"\n        }\n      }\n    ]\n  }\n}\n",
+    "http_code": 401,
+    "chunk_file_id": "1TdSESE7SkDfAUhkT07X3JDAAGC5V8-Rj",
+    "entered": "true - google"
+}

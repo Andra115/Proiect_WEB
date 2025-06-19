@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 session_start();
 require_once 'db.php';
 $credsBox = json_decode(file_get_contents(__DIR__ . '/../box_credentials.json'), true);
@@ -21,7 +24,7 @@ if (php_sapi_name() === 'cli') {
     $input = json_decode(file_get_contents('php://input'), true);
 }
 
-if (!$input || !$input['file_id'] || !$input['user_id']) {
+if (!$input || !$input['file_id'] || !$input['user_id'] || !$input['new_name']) {
     http_response_code(400);
     echo json_encode(['error' => 'Error: Invalid input']);
     exit;
@@ -47,6 +50,17 @@ function refreshAccessToken($url, $params) {
     curl_close($ch);
     return json_decode($response, true);
 }
+
+try{
+    $stmtInfo = $pdo->prepare("SELECT chunk_id FROM file_chunks WHERE file_id=? ");
+    $stmtInfo->execute([$file_id]);
+    $chunkIds = $stmtInfo->fetchAll(PDO::FETCH_COLUMN);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    exit;
+}
+
 try{
     $stmtInfo = $pdo->prepare("SELECT chunk_id FROM file_chunks WHERE file_id=? ");
     $stmtInfo->execute([$file_id]);
@@ -58,6 +72,19 @@ try{
 }
 
 
+$id=$chunkIds[0];
+try{
+    $stmtNr = $pdo->prepare("SELECT nr_of_chunks FROM file_chunks WHERE chunk_id=?");
+    $stmtNr->execute([$id]);
+    $nrOfChunks = $stmtNr->fetchColumn();
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    exit;
+}
+$nr=0;
+
+
 foreach ($chunkIds as $chunkId) {
    try{
     $stmtAcc=$pdo->prepare("SELECT ca.account_id, ca.access_token, ca.refresh_token, ca.provider, ca.token_expiry 
@@ -66,6 +93,16 @@ foreach ($chunkIds as $chunkId) {
     $stmtAcc->execute([$chunkId]);
     $accountInfo = $stmtAcc->fetch(PDO::FETCH_ASSOC);
    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+
+    try{
+        $stmt = $pdo->prepare("SELECT fc.chunk_file_id FROM file_chunks fc WHERE fc.chunk_id = ?");
+        $stmt->execute([$chunkId]);
+        $chunkFileId = $stmt->fetchColumn();
+    } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
         exit;
@@ -100,16 +137,20 @@ foreach ($chunkIds as $chunkId) {
                 $url = "https://oauth2.googleapis.com/token";
                 $params = [
                     'grant_type' => 'refresh_token',
-                    'client_id' => $credsGoogle['client_id'],
-                    'client_secret' => $credsGoogle['client_secret'],
+                    'client_id' => $credsGoogle['web']['client_id'],
+                    'client_secret' => $credsGoogle['web']['client_secret'],
                     'refresh_token' => $refreshToken
                 ];
             }
             $tokenData = refreshAccessToken($url, $params);  //acctok, expires, refresh
-
+            if (isset($tokenData['error'])) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Error refreshing access token: ' . $tokenData['error']]);
+                exit;
+            }
             $accessToken = $tokenData['access_token'] ?? null;
             $expiresIn = $tokenData['expires_in'] ?? null;
-            $refreshToken = $tokenData['refresh_token'];  
+            $refreshToken = $tokenData['refresh_token'] ?? null;  
 
             if($expiresIn == null){
                 if($provider == 'dropbox'){
@@ -120,7 +161,16 @@ foreach ($chunkIds as $chunkId) {
             }
                  $token_expiry = time() + $expiresIn;
                  $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry);   
-
+                if($provider == 'google'){
+                    try{  $stmtUpdate = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry = ? WHERE account_id = ?");
+                        $stmtUpdate->execute([$accessToken, $token_expiry_formatted, $accountId]);
+                      } catch (Exception $e) {
+                           http_response_code(500);
+                           echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+                           exit;
+                      }
+                }
+                else{
                try{  $stmtUpdate = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, refresh_token = ?, token_expiry = ? WHERE account_id = ?");
                  $stmtUpdate->execute([$accessToken, $refreshToken, $token_expiry_formatted, $accountId]);
                } catch (Exception $e) {
@@ -133,7 +183,7 @@ foreach ($chunkIds as $chunkId) {
         }
             if($provider == 'box'){
                 
-                 $url = "https://api.box.com/2.0/files/$file_id";
+                 $url = "https://api.box.com/2.0/files/$chunkFileId";
                  $data = json_encode(["name" => $newName]);
 
                 $ch = curl_init($url);
@@ -218,20 +268,21 @@ foreach ($chunkIds as $chunkId) {
             }
             else if ($provider == 'google'){
 
-                $url = "https://www.googleapis.com/drive/v3/files/$file_id";
+                $url = "https://www.googleapis.com/drive/v3/files/$chunkFileId";
                 $data = json_encode(["name" => $newName]);
 
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PATCH");
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                    "Authorization: Bearer $access_token",
+                    "Authorization: Bearer $accessToken",
                     "Content-Type: application/json",
                     "Content-Length: " . strlen($data)
                 ]);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
                 $response = curl_exec($ch);
+                
                 if ($response === false) {
                     $error = curl_error($ch);
                     curl_close($ch);
@@ -243,7 +294,10 @@ foreach ($chunkIds as $chunkId) {
                 $res = json_decode($response, true);
                 if(!isset($res['name'])){
                     http_response_code(500);
-                    echo json_encode(['error' => 'Error renaming file on Google Drive: Invalid response']);
+                    echo json_encode([
+                        'error' => 'Error renaming file on Google Drive: Invalid response',
+                        'google_response' => $response 
+                    ]);
                     exit;
                 } else {
                     $nr++;
@@ -253,6 +307,7 @@ foreach ($chunkIds as $chunkId) {
         
         }
     }
+}
 
 
 if($nr == $nrOfChunks){

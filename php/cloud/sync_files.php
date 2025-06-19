@@ -57,6 +57,7 @@ function listAllBoxFiles($access_token, $folderId = '0')
                 'created_at' => $item['created_at'],
                 'extension' => $item['extension'] ?? 'unknown',
                 'type' => $item['type'],
+                'path' => null
             ];
         } elseif ($item['type'] === 'folder') {
             $files = array_merge($files, listAllBoxFiles($access_token, $item['id']));
@@ -88,6 +89,7 @@ function listAllDropboxFiles($access_token, $cursor = null)
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
     $response = curl_exec($ch);
+   
     curl_close($ch);
 
     $data = json_decode($response, true);
@@ -102,7 +104,8 @@ function listAllDropboxFiles($access_token, $cursor = null)
                 'size' => $entry['size'],
                 'created_at' => $entry['client_modified'],
                 'extension' => $path_parts['extension'] ?? 'unknown',
-                'type' => 'file'
+                'type' => 'file',
+                'path' => $entry['path_display']
             ];
         }
     }
@@ -147,7 +150,8 @@ function listAllGoogleDriveFiles($access_token, $folderId = 'root')
                     'size' => isset($item['size']) ? (int)$item['size'] : 0,
                     'created_at' => $item['createdTime'],
                     'extension' => $path_parts['extension'] ?? 'unknown',
-                    'type' => 'file'
+                    'type' => 'file',
+                    'path' => null
                 ];
             } else {
                 $files = array_merge($files, listAllGoogleDriveFiles($access_token, $item['id']));
@@ -178,7 +182,7 @@ try {
     }
 
  
-    $stmt = $pdo->prepare("SELECT file_name FROM files WHERE account_id = ?");
+    $stmt = $pdo->prepare("SELECT f.file_name FROM files f JOIN file_chunks fc ON f.file_id = fc.file_id WHERE fc.account_id = ?");
     $stmt->execute([$account_id]);
     $existingFiles = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
@@ -188,9 +192,12 @@ try {
 
     $stmtInsert = $pdo->prepare("INSERT INTO files (account_id, user_id, file_name, file_size, uploaded_at, type) VALUES (?, ?, ?, ?, ?, ?)");
     $newFiles = 0;
+    
+    $insert = $pdo->prepare("INSERT INTO file_chunks (file_id, account_id, chunk_index, chunk_size, nr_of_chunks, chunk_file_id, chunk_path) VALUES (?, ?, ?, ?, ?, ?, ?)");
+
 
     foreach ($all_files as $file) {
-        if (!in_array($file['id'], $existingFileIds)) {
+        if (!in_array($file['id'], $existingFileIds) && $file['id'] != 'pending') {
             if (!in_array($file['name'], $existingFiles)) {
                 $stmtInsert->execute([
                     $account_id,
@@ -200,34 +207,22 @@ try {
                     $file['created_at'],
                     $file['extension']
                 ]);
-                $newFiles++;
-            }
-        }
-    }
-    
-  
-
-
-    $stmt = $pdo->prepare("SELECT file_id FROM files WHERE file_name LIKE ? AND account_id = ?");
-    $insert = $pdo->prepare("INSERT INTO file_chunks (file_id, account_id, chunk_index, chunk_size, nr_of_chunks, chunk_file_id) VALUES (?, ?, ?, ?, ?, ?)");
-
-    foreach ($all_files as $file) {
-        if (!in_array($file['id'], $existingFileIds)) {
-            $stmt->execute(['%' . $file['name'] . '%', $account_id]);
-            $fileID = $stmt->fetchColumn();
-
-            if ($fileID) {
+                $fileID = $pdo->lastInsertId();
                 $insert->execute([
                     $fileID,
                     $account_id,
                     1,
                     $file['size'],
                     1,
-                    $file['id']
+                    $file['id'],
+                    $file['path']
                 ]);
+                $newFiles++;
             }
         }
     }
+    
+  
 
 
       //deleting file chunks if they are not in the cloud and we ll give an error later if the user tries to download or sth
@@ -259,6 +254,8 @@ try {
     if($deletedFiles > 0) {
         $filesDeleted = " Deleted $deletedFiles files.";
     }
+
+
 
     echo json_encode([
         'success' => true,
