@@ -861,6 +861,11 @@ button.view-btn:hover {
     transform: translateY(-15px);
 }
 
+.file-menu-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
 .file-menu {
     display: none;
     position: absolute;
@@ -887,18 +892,9 @@ button.view-btn:hover {
     box-sizing: border-box;
 }
 
-.file-menu-option:first-child {
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-}
-
-.file-menu-option:last-child {
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
 .file-menu-option:hover {
     background: #f0f0f0;
+    color: #333;
 }
 
 h2 {
