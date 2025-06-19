@@ -153,6 +153,12 @@ foreach ($chunkIds as $chunkId) {
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
                 $response = curl_exec($ch);
+                if ($response === false) {
+                    $error = curl_error($ch);
+                    curl_close($ch);
+                    throw new Exception("cURL error: $error");
+                }
+                
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
 
@@ -178,6 +184,12 @@ foreach ($chunkIds as $chunkId) {
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
                 $response = curl_exec($ch);
+                if ($response === false) {
+                    $error = curl_error($ch);
+                    curl_close($ch);
+                    throw new Exception("cURL error: $error");
+                }
+
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
 
@@ -200,6 +212,11 @@ foreach ($chunkIds as $chunkId) {
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
                 $response = curl_exec($ch);
+                if ($response === false) {
+                    $error = curl_error($ch);
+                    curl_close($ch);
+                    throw new Exception("cURL error: $error");
+                }
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
 
