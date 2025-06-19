@@ -37,8 +37,17 @@ $totalMB = number_format($totalBytes / (1024 * 1024), 2);
             <?php else: ?>
                 <?php foreach ($files as $file): ?>
                     <div class="file-item">
-                        <div class="file-info">
                             <div class="file-name-section">
+                                <div class="file-menu-wrapper">
+                                    <button class="file-menu-btn" onclick="toggleMenu(this)">
+                                        &#x22EE;
+                                    </button>
+                                    <div class="file-menu">
+                                        <button class="file-menu-option" onclick="renameFile('<?php echo $file['file_id']; ?>')">Rename</button>
+                                        <button class="file-menu-option" onclick="deleteFile('<?php echo $file['file_id']; ?>')">Delete</button>
+                                        <button class="file-menu-option" onclick="downloadFile('<?php echo $file['file_id']; ?>')">Download</button>
+                                    </div>
+                                </div>
                                 <?php
                                 $type = rtrim($file['file_type']);
                                 switch ($type) {
@@ -74,10 +83,35 @@ $totalMB = number_format($totalBytes / (1024 * 1024), 2);
                                 <span class="file-name"><?php echo htmlspecialchars($file['file_name']); ?></span>
                             </div>
                             <span class="file-date"><?php echo date('M j, Y, g:i A', strtotime($file['uploaded_at'])); ?></span>
-                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
     </div>
-</div> 
+</div>
+
+<script>
+function toggleMenu(btn) {
+    document.querySelectorAll('.file-menu').forEach(menu => {
+        if (menu !== btn.nextElementSibling) menu.style.display = 'none';
+    });
+    const menu = btn.nextElementSibling;
+    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.file-menu-wrapper')) {
+        document.querySelectorAll('.file-menu').forEach(menu => menu.style.display = 'none');
+    }
+});
+
+function renameFile(fileId) {
+    alert('Rename file: ' + fileId);
+}
+function deleteFile(fileId) {
+    alert('Delete file: ' + fileId);
+}
+function downloadFile(fileId) {
+    alert('Download file: ' + fileId);
+}
+</script> 

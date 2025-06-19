@@ -363,6 +363,12 @@ button.view-btn:hover {
     height: 100%;
 }
 
+.search-input-wrapper {
+    position: relative;
+    width: 100%;
+    display: block;
+}
+
 .search-bar {
     font-family: 'Lemon', serif;
     width: 100%;
@@ -777,10 +783,14 @@ button.view-btn:hover {
     align-items: center;
     width: 100%;
     background: white;
-    padding: 15px 20px;
+    padding: 0px 10px;
     border-radius: 10px !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin: 0;
+
+    min-height: 48px;
+    height: auto;
+    align-items: center;
 }
 
 .file-info {
@@ -797,6 +807,7 @@ button.view-btn:hover {
     gap: 10px;
     flex: 1 1 0;
     min-width: 0;
+    height: 24px;
 }
 
 .file-name {
@@ -822,6 +833,72 @@ button.view-btn:hover {
     padding: 20px;
     color: #666;
     font-family: 'Lemon', serif;
+}
+
+.file-menu-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 24px;
+    margin-right: 10px;
+    justify-content: center;
+}
+
+.file-menu-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 6px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    height: 24px;
+    min-width: 32px;
+    vertical-align: middle;
+    transform: translateY(-15px);
+}
+
+.file-menu {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 28px;
+    background: #fff;
+    border: 1px solid #ddd;
+    z-index: 100;
+    border-radius: 6px;
+    padding: 0;
+}
+
+.file-menu-option {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: #333;
+    font-size: 15px;
+    padding: 10px 16px;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.file-menu-option:first-child {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+.file-menu-option:last-child {
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.file-menu-option:hover {
+    background: #f0f0f0;
 }
 
 h2 {
@@ -1066,7 +1143,6 @@ h2 {
     width: 100%;
 }
 
-
 .sync-text-inline {
     font-size: 1em;
     color: #333;
@@ -1083,7 +1159,27 @@ h2 {
     color: #5a0e16;
 }
 
+.clear-search {
+    display: none;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-185%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #888;
+    outline: none;
+    box-shadow: none;
+    padding: 0;
+    width: auto;
+    height: auto;
+}
 
-
-
-
+.clear-search:hover {
+    background: none;
+    outline: none;
+    box-shadow: none;
+    color: #333;
+}

@@ -68,7 +68,7 @@ if (isset($_GET['code'])) {
     $driveService = new Google\Service\Drive($client);
     $about = $driveService->about->get(['fields' => 'storageQuota']);
     $user_storage_info = $about->getStorageQuota();
-    $total_space = $user_storage_info->getLimit() ?? 16106127360; // and once again just in case it doesnt work falling on default free acc
+    $total_space = $user_storage_info->getLimit() ?? 16106127360;
     $used = $user_storage_info->getUsage() ?? 0;
         
 
