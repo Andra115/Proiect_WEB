@@ -49,9 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
         } catch (PDOException $e) {
+            $errorCode = $e->getCode();
+            if ($errorCode === 'P0001') {
+                $msg = 'There is no account using this email address.';
+            } else if ($errorCode === 'P0002') {
+                $msg = 'Incorrect password.';
+            } else {
+                $msg = 'Database error: ' . $e->getMessage();
+            }
             echo json_encode([
                 "success" => false,
-                "message" => "Database error: " . $e->getMessage()
+                "message" => $msg
             ]);
             exit;
         }
@@ -86,9 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="rememberMe">
                 <input type="checkbox" name="remember" value="1"> Remember me
             </div>
-            <?php if ($message): ?>
-                <div class="error-message"><?= htmlspecialchars($message) ?></div>
-            <?php endif; ?>
+            <div id="login-error-message" class="error-message"></div>
             <div>
                 <button type="submit" class="loginButton">Log in</button>
             </div>
@@ -109,6 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         const result = await response.json();
 
+        let errorDiv = document.getElementById('login-error-message');
         if (result.success) {
             const remember = form.querySelector('input[name="remember"]').checked;
             if (remember) {
@@ -118,12 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             window.location.href = 'welcome.php';
         } else {
-            let errorDiv = document.querySelector('.error-message');
-            if (!errorDiv) {
-                errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                form.insertBefore(errorDiv, form.firstChild);
-            }
+            errorDiv.style.color = 'red';
             errorDiv.textContent = result.message;
         }
     });

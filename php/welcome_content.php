@@ -25,18 +25,30 @@ $files = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $totalFiles = count($files);
 $totalBytes = array_sum(array_column($files, 'file_size'));
-$totalMB = number_format($totalBytes / (1024 * 1024), 2);
+$totalGB = number_format($totalBytes / (1024 * 1024 * 1024), 3);
+
+$storageStmt = $pdo->prepare("SELECT * FROM get_user_storage(:user_id)");
+$storageStmt->execute(['user_id' => $userId]);
+$storage = $storageStmt->fetch(PDO::FETCH_ASSOC);
+$total_storage = $storage['total_storage'];
+$space_available = $storage['total_available'];
+$used_storage = $total_storage - $space_available;
+$used_storage_gb = $used_storage / (1024 ** 3);
+$total_storage_gb = $total_storage / (1024 ** 3);
+
 ?>
 <div class="welcome-content">
     <h2>Cloud9 Storage Dashboard</h2>
-    
-    <div class="stats-container">
+    <div class="stats-row">
         <div class="storage-card">
             <h3>Quick Stats</h3>
             <ul>
                 <li>Total Files: <?php echo $totalFiles; ?></li>
-                <li>Storage Used: <?php echo $totalMB; ?> MB</li>
+                <li>Files Occupy: <?php echo $totalGB; ?> GB</li>
             </ul>
+        </div>
+        <div class="upload-card">
+            <a href="upload.php" class="upload_btn">Upload new file</a>
         </div>
     </div>
     <div class="files-container">
