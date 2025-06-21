@@ -1,5 +1,3 @@
-
-
 function toggleMenu(btn) {
     document.querySelectorAll('.file-menu').forEach(menu => {
         if (menu !== btn.nextElementSibling) menu.style.display = 'none';
@@ -112,3 +110,18 @@ function downloadFile(fileId, userId) {
   alert("An unexpected error occurred.");
 });
 }
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const type = this.getAttribute('data-type');
+        fetch('php/filter_files.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'type=' + encodeURIComponent(type)
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.querySelector('.files-list').innerHTML = html;
+        });
+    });
+});

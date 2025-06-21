@@ -37,19 +37,19 @@ $connectedDrives = getConnectedDrives($user_id);
     </div>
 
     <div class="view-options">
-        <button class="view-btn active" onclick="updateFileType('')">Recent Files</button>
+        <button class="view-btn active" onclick="updateFileType('', this)">Recent Files</button>
         <div class="file-types-grid">
             <div class="file-types-row">
-                <button class="file-type-btn" onclick="updateFileType('document')"><img src="../../assets/document.png" alt="Document" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('pdf')"><img src="../../assets/pdf.png" alt="PDF" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('spreadsheet')"><img src="../../assets/spreadsheet.png" alt="Spreadsheet" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('presentation')"><img src="../../assets/presentation.png" alt="Presentation" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('document', this)"><img src="../../assets/document.png" alt="Document" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('pdf', this)"><img src="../../assets/pdf.png" alt="PDF" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('spreadsheet', this)"><img src="../../assets/spreadsheet.png" alt="Spreadsheet" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('presentation', this)"><img src="../../assets/presentation.png" alt="Presentation" class="file-type-icon"></button>
             </div>
             <div class="file-types-row">
-                <button class="file-type-btn" onclick="updateFileType('image')"><img src="../../assets/image.png" alt="Image" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('video')"><img src="../../assets/video.png" alt="Video" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('audio')"><img src="../../assets/audio.png" alt="Audio" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('archive')"><img src="../../assets/archive.png" alt="Archive" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('image', this)"><img src="../../assets/image.png" alt="Image" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('video', this)"><img src="../../assets/video.png" alt="Video" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('audio', this)"><img src="../../assets/audio.png" alt="Audio" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('archive', this)"><img src="../../assets/archive.png" alt="Archive" class="file-type-icon"></button>
             </div>
         </div>
     </div>

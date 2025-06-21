@@ -105,13 +105,6 @@ if (!$chunks) {
 
 
 $finalPath = tempnam(sys_get_temp_dir(), 'final_');
-$finalHandle = fopen($finalPath, 'wb');
-
-if (!$finalHandle) {
-    echo json_encode(['success' => false, 'error' => 'Could not create final file']);
-    exit;
-}
-
 
 foreach ($chunks as $chunk) {
     $provider = $chunk['provider'];
@@ -122,34 +115,49 @@ foreach ($chunks as $chunk) {
     $refreshToken = $chunk['refresh_token'];
     $accountId = $chunk['account_id'];
 
-    
     $accessToken = refreshTokenIfNeeded($provider, $accessToken, $refreshToken, $expiry, $accountId, $credsBox, $credsDropbox, $credsGoogle, $pdo);
     if (!$accessToken) {
-        fclose($finalHandle);
         unlink($finalPath);
         echo json_encode(['success' => false, 'error' => 'Token refresh failed for chunk ' . $chunk['chunk_index']]);
         exit;
     }
 
-   
+    $tempChunkPath = tempnam(sys_get_temp_dir(), 'chunk_');
+
     if ($provider == 'dropbox') {
-        $success = downloadChunkDirectly($provider, $chunk['chunk_path'], $accessToken, $finalHandle);
+        $success = downloadChunkStreaming($provider, $chunkPath, $accessToken, $tempChunkPath);
     } else {
-        $success = downloadChunkDirectly($provider, $chunk['chunk_file_id'], $accessToken, $finalHandle);
+        $success = downloadChunkStreaming($provider, $cloudFileId, $accessToken, $tempChunkPath);
     }
 
     if (!$success) {
-        fclose($finalHandle);
         unlink($finalPath);
+        unlink($tempChunkPath);
         echo json_encode(['success' => false, 'error' => "Failed to fetch chunk {$chunk['chunk_index']}"]);
         exit;
     }
+
+    $chunkHandle = fopen($tempChunkPath, 'rb');
+$finalHandle = fopen($finalPath, 'ab');
+
+if (!$chunkHandle || !$finalHandle) {
+    if ($chunkHandle) fclose($chunkHandle);
+    if ($finalHandle) fclose($finalHandle);
+    unlink($finalPath);
+    unlink($tempChunkPath);
+    echo json_encode(['success' => false, 'error' => "Failed to open file handles for chunk {$chunk['chunk_index']}"]);    exit;
 }
 
-fclose($finalHandle);
+    stream_copy_to_stream($chunkHandle, $finalHandle);
+
+    fclose($chunkHandle);
+    fclose($finalHandle);
+    unlink($tempChunkPath);
+}
 
 
 $token = uniqid('dl_', true);
+
 if (!isset($_SESSION['downloads'])) {
     $_SESSION['downloads'] = [];
 }
@@ -157,6 +165,11 @@ $_SESSION['downloads'][$token] = [
     'path' => $finalPath,
     'name' => $file['file_name']
 ];
+
+file_put_contents(sys_get_temp_dir() . "/$token.json", json_encode([
+    'path' => $finalPath,
+    'name' => $file['file_name']
+]));
 
 echo json_encode(['success' => true, 'token' => $token]);
 
