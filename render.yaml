@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: proiect-web
-    env: php
-    branch: main
-    buildCommand: composer install
-    startCommand: php -S 0.0.0.0:10000
