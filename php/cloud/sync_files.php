@@ -221,11 +221,7 @@ try {
             }
         }
     }
-    
-  
 
-
-      //deleting file chunks if they are not in the cloud and we ll give an error later if the user tries to download or sth
     $stmtDeleteChunks = $pdo->prepare("DELETE FROM file_chunks WHERE account_id = ? AND chunk_file_id = ?");
     $deletedFiles = 0;
 
@@ -241,7 +237,7 @@ try {
             $deletedFiles++;
         }
     }
-    //deleteing files fi they have no more chunks
+    
     $stmtDelete=$pdo->prepare("DELETE FROM files f WHERE NOT EXISTS (SELECT 1 FROM file_chunks fc WHERE fc.file_id=f.file_id) AND f.account_id = ?");
     $stmtDelete->execute([$account_id]);
 

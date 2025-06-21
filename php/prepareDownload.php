@@ -93,7 +93,6 @@ if ($file['account_id']) {
     exit;
 }
 
-// and from here starts the procesing of chunks that im not sure if it works yet cause the upload is lowkey still a work in progress
 $stmt = $pdo->prepare("SELECT fc.chunk_file_id, fc.chunk_path, ac.provider, ac.access_token, ac.refresh_token, ac.token_expiry, ac.account_id, fc.chunk_index 
                          FROM file_chunks fc JOIN cloud_accounts ac ON fc.account_id = ac.account_id WHERE fc.file_id = ? ORDER BY fc.chunk_index ASC");
 $stmt->execute([$fileId]);

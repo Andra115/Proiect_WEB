@@ -2,6 +2,7 @@
 ini_set('memory_limit', '512M');
 session_start();
 require_once 'db.php';
+require_once 'cloud_upload.php';
 
 $pageTitle = 'Upload File - Cloud9 Storage Manager';
 $message = '';
@@ -18,8 +19,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
 
+            $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+            $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+            $uniqueName = $originalName;
+            $counter = 1;
+            while (true) {
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM files WHERE user_id = ? AND file_name = ?");
+                $stmt->execute([$userId, $uniqueName]);
+                $exists = $stmt->fetchColumn();
+                if ($exists == 0) break;
+                $uniqueName = $baseName . "_" . $counter;
+                if ($extension) $uniqueName .= "." . $extension;
+                $counter++;
+            }
+
             $stmt = $pdo->prepare("INSERT INTO files (user_id, file_name, file_size, uploaded_at) VALUES (?, ?, ?, NOW()) RETURNING file_id");
-            $stmt->execute([$userId, $originalName, $fileSize]);
+            $stmt->execute([$userId, $uniqueName, $fileSize]);
             $fileId = $stmt->fetchColumn();
 
             if (!$fileId) {
@@ -39,20 +54,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$fileId]);
             $chunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            var_dump($chunks);
-
-            echo "File size: $fileSize\n";
-            $totalChunkSize = 0;
-            foreach ($chunks as $chunk) {
-                $totalChunkSize += $chunk['chunk_size'];
-            }
-            echo "Total chunk size: $totalChunkSize\n";
-
             if (empty($chunks)) {
                 throw new Exception("No chunks were created for the file");
             }
 
-            print_r($stmt->execute([$fileId]));
+            if (count($chunks) === 1) {
+                $stmt = $pdo->prepare("SELECT account_id FROM file_chunks WHERE file_id = ? LIMIT 1");
+                $stmt->execute([$fileId]);
+                $accountId = $stmt->fetchColumn();
+                
+                if ($accountId) {
+                    $stmt = $pdo->prepare("UPDATE files SET account_id = ? WHERE file_id = ?");
+                    $stmt->execute([$accountId, $fileId]);
+                }
+            }
 
             $pdo->commit();
 
@@ -115,6 +130,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($chunksCreated as $chunkPath) {
                 if (!file_exists($chunkPath) || filesize($chunkPath) === 0) {
                     throw new Exception("Chunk file verification failed: " . basename($chunkPath));
+                }
+            }
+
+            $stmt = $pdo->prepare("
+                SELECT fc.chunk_id, fc.chunk_index, ac.provider, ac.access_token, ac.refresh_token, ac.token_expiry, ac.account_id 
+                FROM file_chunks fc 
+                JOIN cloud_accounts ac ON fc.account_id = ac.account_id 
+                WHERE fc.file_id = ? 
+                ORDER BY fc.chunk_index ASC
+            ");
+            $stmt->execute([$fileId]);
+            $cloudChunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($cloudChunks as $cloudChunk) {
+                $chunkNum = $cloudChunk['chunk_index'];
+                $chunkPath = $chunkDir . "/{$fileId}_chunk{$chunkNum}";
+                $provider = $cloudChunk['provider'];
+                $accessToken = $cloudChunk['access_token'];
+                $refreshToken = $cloudChunk['refresh_token'];
+                $expiry = $cloudChunk['token_expiry'];
+                $accountId = $cloudChunk['account_id'];
+                $chunkId = $cloudChunk['chunk_id'];
+
+                $accessToken = refreshTokenIfNeeded($provider, $accessToken, $refreshToken, $expiry, $accountId, $credsBox, $credsDropbox, $credsGoogle, $pdo);
+                if (!$accessToken) {
+                    throw new Exception("Failed to refresh access token for chunk {$chunkNum}");
+                }
+
+                $cloudFileName = "chunk_{$fileId}_{$chunkNum}_" . uniqid() . ".bin";
+
+                $uploadResult = uploadChunkToCloud($provider, $chunkPath, $accessToken, $cloudFileName);
+                if (!$uploadResult) {
+                    throw new Exception("Failed to upload chunk {$chunkNum} to {$provider}");
+                }
+
+                $stmt = $pdo->prepare("UPDATE file_chunks SET chunk_file_id = ?, chunk_path = ? WHERE chunk_id = ?");
+                $stmt->execute([
+                    $uploadResult['file_id'],
+                    $uploadResult['path'],
+                    $chunkId
+                ]);
+
+                if (file_exists($chunkPath)) {
+                    unlink($chunkPath);
                 }
             }
 

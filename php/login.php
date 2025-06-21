@@ -20,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $loginSuccess = $stmt->fetchColumn();
 
             if ($loginSuccess) {
-                $key = "Aceasta este o cheie supersecreta";
+                $jwtConfig = json_decode(file_get_contents(__DIR__ . '/../jwt.json'), true);
+                $key = $jwtConfig['key'];
                 $iss_time = time();
                 $userIdStmt = $pdo->prepare('SELECT user_id FROM users WHERE email = :email');
                 $userIdStmt->execute(['email' => $email]);

@@ -17,12 +17,13 @@ if (!$jwt) {
 }
 
 try {
-    $key = "Aceasta este o cheie supersecreta";
+    $jwtConfig = json_decode(file_get_contents(__DIR__ . '/../jwt.json'), true);
+    $key = $jwtConfig['key'];
     $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
     $userId = $decoded->user_id;
     
-    $stmt = $pdo->prepare('SELECT * FROM get_user_info(:id)');
-    $stmt->execute(['id' => $userId]);
+    $stmt = $pdo->prepare('SELECT * FROM get_user_info(:p_user_id)');
+    $stmt->execute(['p_user_id' => (int)$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user) {

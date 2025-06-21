@@ -6,21 +6,14 @@ use Firebase\JWT\Key;
 
 $userId = $_SESSION['user_id'];
 if(!isset($userId)) {
-   try {
-    $key = "Aceasta este o cheie supersecreta";
-    $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-    $userId = $decoded->user_id;
-}
-catch (Exception $e) {
     header("Location: /../../login.php");
     exit;
-   }
 }
 $fileType = isset($_SESSION['selected_file_type']) ? $_SESSION['selected_file_type'] : '';
 $searchedFileName = isset($_SESSION['searched_file_name']) ? $_SESSION['searched_file_name'] : '';
 
-$stmt = $pdo->prepare('SELECT * FROM get_user_files(:user_id, :type, :searched_file_name)');
-$stmt->execute(['user_id' => $userId, 'type' => $fileType, 'searched_file_name' => $searchedFileName]);
+$stmt = $pdo->prepare('SELECT * FROM get_user_files(:p_user_id, :p_type, :p_searched)');
+$stmt->execute(['p_user_id' => $userId, 'p_type' => $fileType, 'p_searched' => $searchedFileName]);
 $files = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $totalFiles = count($files);
