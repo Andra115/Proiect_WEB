@@ -121,6 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const remember = form.querySelector('input[name="remember"]').checked;
             if (remember) {
                 localStorage.setItem('jwt', result.jwt);
+                sessionStorage.setItem('jwt', result.jwt);
             } else {
                 sessionStorage.setItem('jwt', result.jwt);
             }

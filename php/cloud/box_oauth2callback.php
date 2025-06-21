@@ -2,10 +2,11 @@
 session_start();
 require_once __DIR__ . '/../db.php';
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /../../login.php");
+    header("Location: /../login.php");
     exit;
 }
 $user_id = $_SESSION['user_id'];
+
 $creds_file = __DIR__ . '/../../box_credentials.json';
 if (!file_exists($creds_file)) {
     die('Error : Credentials file not found');
@@ -77,52 +78,51 @@ if (isset($token['access_token']) && $http_code === 200) {
         die('Error while trying to retrieve email');
     }
 
-try{
-    $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box' AND user_id = ?");
-    $stmt->execute([$email, $user_id]);
-    $account_result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $account_id = $account_result ? $account_result['account_id'] : null;
-
-    $token_expiry = time() + ($token['expires_in'] ?? 3600);
-
-
-    if (!$account_id) {
-        $stmt = $pdo->prepare("INSERT INTO cloud_accounts (user_id,provider, email, access_token,refresh_token,token_expiry,total_space,space_available) 
-                            VALUES (?, 'box', ?,?,?,?,?,?)");
-        
-        $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry);             
-        $stmt->execute([
-            $user_id,
-            $email,
-            $token['access_token'],
-            $token['refresh_token'],
-            $token_expiry_formatted,
-            10737418240,
-            10737418240
-        ]);
+    try {
         $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box' AND user_id = ?");
         $stmt->execute([$email, $user_id]);
-        $account_id = $stmt->fetchColumn(); 
-        
-    } else {
-        $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry); 
-        $stmt = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry=? WHERE email = ? AND provider = 'box' AND user_id = ?");
-        $stmt->execute([$access_token,$token_expiry_formatted, $email, $user_id]);
+        $account_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $account_id = $account_result ? $account_result['account_id'] : null;
+
+        $token_expiry = time() + ($token['expires_in'] ?? 3600);
+
+
+        if (!$account_id) {
+            $stmt = $pdo->prepare("INSERT INTO cloud_accounts (user_id,provider, email, access_token,refresh_token,token_expiry,total_space,space_available) 
+                            VALUES (?, 'box', ?,?,?,?,?,?)");
+
+            $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry);
+            $stmt->execute([
+                $user_id,
+                $email,
+                $token['access_token'],
+                $token['refresh_token'],
+                $token_expiry_formatted,
+                10737418240,
+                10737418240
+            ]);
+            $stmt = $pdo->prepare("SELECT account_id FROM cloud_accounts WHERE email = ? AND provider = 'box' AND user_id = ?");
+            $stmt->execute([$email, $user_id]);
+            $account_id = $stmt->fetchColumn();
+        } else {
+            $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry);
+            $stmt = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry=? WHERE email = ? AND provider = 'box' AND user_id = ?");
+            $stmt->execute([$access_token, $token_expiry_formatted, $email, $user_id]);
+        }
+    } catch (Exception $e) {
+        die('Database error: ' . $e->getMessage());
     }
-} catch (Exception $e) {
-    die('Database error: ' . $e->getMessage());
-}
 
 
     $_SESSION['pending_sync'] = [
-            'account_id' => $account_id,
-            'access_token' => $access_token,
-            'email' => $email,
-            'provider' => 'box',
-            'user_id' => $user_id
-        ];
-    
- 
+        'account_id' => $account_id,
+        'access_token' => $access_token,
+        'email' => $email,
+        'provider' => 'box',
+        'user_id' => $user_id
+    ];
+
+
 
     header("Location: /php/welcome.php");
     exit;

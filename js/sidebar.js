@@ -16,6 +16,7 @@ document.addEventListener('click', function(event) {
         sidebar.classList.remove('active');
         toggle.classList.remove('active');
     }
+
 });
 
 window.addEventListener('resize', function() {
@@ -52,6 +53,7 @@ function updateFileType(type, btn) {
 }
 
 function connectCloudService(provider) {
+
     fetch(`/../php/cloud/${provider}.php`, {
         method: 'POST',
         headers: {

@@ -3,12 +3,12 @@
 session_start();
 
 require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /../../login.php");
+    header("Location: /../login.php");
     exit;
 }
 $user_id = $_SESSION['user_id'];
-require_once __DIR__ . '/../../vendor/autoload.php';
 
 $client = new Google_Client();
 $client->setAuthConfig(__DIR__ . '/../../driver_credentials.json');

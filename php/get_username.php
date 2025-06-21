@@ -1,4 +1,5 @@
 <?php
+session_start(); 
 require_once 'db.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -21,7 +22,16 @@ try {
     $key = $jwtConfig['key'];
     $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
     $userId = $decoded->user_id;
+
+    if (!$userId) {
+        echo json_encode(['error' => 'Invalid token payload']);
+        exit;
+    }
+
+    $_SESSION['user_id'] = $userId;
     
+    
+
     $stmt = $pdo->prepare('SELECT * FROM get_user_info(:p_user_id)');
     $stmt->execute(['p_user_id' => (int)$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);

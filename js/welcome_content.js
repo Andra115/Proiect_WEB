@@ -111,6 +111,7 @@ function downloadFile(fileId, userId) {
 });
 }
 
+
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const type = this.getAttribute('data-type');
@@ -125,3 +126,93 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
         });
     });
 });
+
+function getFileIcon(type) {
+    const icons = {
+        'image': '../assets/image.png',
+        'pdf': '../assets/pdf.png',
+        'document': '../assets/document.png',
+        'spreadsheet': '../assets/spreadsheet.png',
+        'presentation': '../assets/presentation.png',
+        'audio': '../assets/audio.png',
+        'video': '../assets/video.png',
+        'archive': '../assets/archive.png'
+    };
+    return icons[type?.trim()] || '../assets/file.png';
+}
+
+function refreshFiles() {
+    fetch('../php/get_files.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const container = document.querySelector('.files-list');
+                container.innerHTML = '';
+
+                if (data.files.length === 0) {
+                    container.innerHTML = '<div class="no-files">No files found</div>';
+                } else {
+                    data.files.forEach(file => {
+                        const item = document.createElement('div');
+                        item.classList.add('file-item');
+
+                        const icon = getFileIcon(file.file_type);
+                        const formattedDate = new Date(file.uploaded_at).toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            hour12: true
+                        });
+
+                        item.innerHTML = `
+                            <div class="file-name-section">
+                                <div class="file-menu-wrapper">
+                                    <button class="file-menu-btn" onclick="toggleMenu(this)">&#x22EE;</button>
+                                    <div class="file-menu">
+                                        <button class="file-menu-option" onclick="renameFile('${file.file_id}', '${file.user_id}')">Rename</button>
+                                        <button class="file-menu-option" onclick="deleteFile('${file.file_id}', '${file.user_id}')">Delete</button>
+                                        <button class="file-menu-option" onclick="downloadFile('${file.file_id}', '${file.user_id}')">Download</button>
+                                    </div>
+                                </div>
+                                <img src="${icon}" alt="File" class="file-icon">
+                                <span class="file-name">${file.file_name}</span>
+                            </div>
+                            <span class="file-date">${formattedDate}</span>
+                        `;
+                        container.appendChild(item);
+                    });
+                }
+            } else {
+                console.error("Error fetching files:", data.error);
+            }
+        })
+        .catch(err => console.error("Fetch error:", err));
+}
+
+function refreshStats() {
+    fetch('../php/get_stats.php')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('totalFiles').textContent = data.totalFiles;
+                document.getElementById('totalGB').textContent = data.totalGB;
+            } else {
+                console.error("Stats fetch failed:", data.error);
+            }
+        })
+        .catch(err => {
+            console.error("Stats fetch error:", err);
+        });
+}
+
+
+refreshFiles();
+refreshStats();
+
+setInterval(() => {
+    refreshFiles();
+    refreshStats();
+}, 10000);
+
