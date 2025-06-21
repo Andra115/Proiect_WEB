@@ -83,14 +83,34 @@ $connectedDrives = getConnectedDrives($user_id);
                 </div>
             <?php else: ?>
                 <ul class="drives-list">
-                    <?php foreach ($connectedDrives as $drive): ?>
-                        <li class="drive-item">
-                            <div class="drive-header">
-                                <span class="connection-status connected"></span>
-                                <span class="drive-name"><?php echo htmlspecialchars($drive['provider']); ?></span>
-                            </div>
-                            <div class="drive-email"><?php echo htmlspecialchars($drive['email']); ?></div>
-                        </li>
+                    <?php foreach (
+                        $connectedDrives as $drive): ?>
+                    <li class="drive-item">
+                        <div class="drive-header">
+                            <span class="connection-status connected"></span>
+                            <?php
+                            $provider = strtolower($drive['provider']);
+                            $logo = '';
+                            switch ($provider) {
+                                case 'google':
+                                case 'google drive':
+                                case 'drive':
+                                    $logo = '../../assets/google_drive_icon.png';
+                                    break;
+                                case 'dropbox':
+                                    $logo = '../../assets/dropbox_icon.png';
+                                    break;
+                                case 'box':
+                                    $logo = '../../assets/box_icon.png';
+                                    break;
+                                default:
+                                    $logo = '../../assets/cloud.png';
+                            }
+                            ?>
+                            <img src="<?php echo $logo; ?>" alt="<?php echo htmlspecialchars($drive['provider']); ?>" class="drive-logo">
+                        </div>
+                        <div class="drive-email"><?php echo htmlspecialchars($drive['email']); ?></div>
+                    </li>
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
@@ -138,22 +158,10 @@ $connectedDrives = getConnectedDrives($user_id);
 
 
 
-function updateFileType(type) {
-    document.querySelectorAll('.view-btn, .file-type-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    if (type === '') {
-        document.querySelector('.view-btn').classList.add('active');
-    } else {
-        event.currentTarget.classList.add('active');
-    }
     function updateFileType(type) {
-
         document.querySelectorAll('.view-btn, .file-type-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-
 
         if (type === '') {
             document.querySelector('.view-btn').classList.add('active');
@@ -161,21 +169,34 @@ function updateFileType(type) {
             event.currentTarget.classList.add('active');
         }
 
+        function updateFileType(type) {
 
-        fetch('update_file_type.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    type: type
-                })
-            })
-            .then(() => {
-
-                window.location.reload();
+            document.querySelectorAll('.view-btn, .file-type-btn').forEach(btn => {
+                btn.classList.remove('active');
             });
+
+
+            if (type === '') {
+                document.querySelector('.view-btn').classList.add('active');
+            } else {
+                event.currentTarget.classList.add('active');
+            }
+
+
+            fetch('update_file_type.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        type: type
+                    })
+                })
+                .then(() => {
+
+                    window.location.reload();
+                });
+        }
     }
-}
 </script>
-<script src="../../js/connectClouds.js"></script> 
+<script src="../../js/connectClouds.js"></script>
