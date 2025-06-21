@@ -9,15 +9,14 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = $_SESSION['user_id'];
 
-function getConnectedDrives($userId)
-{
+function getConnectedDrives($userId) {
     global $pdo;
     try {
         $stmt = $pdo->prepare("
             SELECT email, provider FROM cloud_accounts WHERE user_id = ? ORDER BY provider DESC");
         $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
+    } catch(PDOException $e) {
         error_log("Error fetching drives: " . $e->getMessage());
         return [];
     }
@@ -35,44 +34,44 @@ $connectedDrives = getConnectedDrives($user_id);
     <div class="logo-container">
         <img src="../../assets/logo_white_on_blue_background.jpeg" alt="Logo" class="logo">
     </div>
-
+    
     <div class="view-options">
-        <button class="view-btn active" onclick="updateFileType('', this)">Recent Files</button>
+        <button class="view-btn active" onclick="updateFileType('')">Recent Files</button>
         <div class="file-types-grid">
             <div class="file-types-row">
-                <button class="file-type-btn" onclick="updateFileType('document', this)"><img src="../../assets/document.png" alt="Document" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('pdf', this)"><img src="../../assets/pdf.png" alt="PDF" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('spreadsheet', this)"><img src="../../assets/spreadsheet.png" alt="Spreadsheet" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('presentation', this)"><img src="../../assets/presentation.png" alt="Presentation" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('document')"><img src="../../assets/document.png" alt="Document" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('pdf')"><img src="../../assets/pdf.png" alt="PDF" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('spreadsheet')"><img src="../../assets/spreadsheet.png" alt="Spreadsheet" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('presentation')"><img src="../../assets/presentation.png" alt="Presentation" class="file-type-icon"></button>
             </div>
             <div class="file-types-row">
-                <button class="file-type-btn" onclick="updateFileType('image', this)"><img src="../../assets/image.png" alt="Image" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('video', this)"><img src="../../assets/video.png" alt="Video" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('audio', this)"><img src="../../assets/audio.png" alt="Audio" class="file-type-icon"></button>
-                <button class="file-type-btn" onclick="updateFileType('archive', this)"><img src="../../assets/archive.png" alt="Archive" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('image')"><img src="../../assets/image.png" alt="Image" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('video')"><img src="../../assets/video.png" alt="Video" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('audio')"><img src="../../assets/audio.png" alt="Audio" class="file-type-icon"></button>
+                <button class="file-type-btn" onclick="updateFileType('archive')"><img src="../../assets/archive.png" alt="Archive" class="file-type-icon"></button>
             </div>
         </div>
     </div>
-
+    
     <div class="divider"></div>
-
+    
     <div class="cloud-services">
         <h3>Connect Services</h3>
         <div class="service-buttons">
-            <a href="#" class="service-btn google-drive" onclick="connectCloudService('drive'); return false;" role="button">
+            <a href="cloud/drive.php" class="service-btn google-drive" role="button">
                 <img src="../../assets/google_drive_icon.png" alt="Google Drive" class="service-icon">
             </a>
-            <a href="#" class="service-btn dropbox" onclick="connectCloudService('dropbox'); return false;" role="button">
+            <a href="cloud/dropbox.php" class="service-btn dropbox" role="button">
                 <img src="../../assets/dropbox_icon.png" alt="Dropbox" class="service-icon">
             </a>
-            <a href="#" class="service-btn box" onclick="connectCloudService('box'); return false;" role="button">
+            <a href="cloud/box.php" class="service-btn box" role="button">
                 <img src="../../assets/box_icon.png" alt="Box" class="service-icon">
             </a>
         </div>
     </div>
-
-    <div class="divider"></div>
-
+    
+   <div class="divider"></div>
+    
     <div class="connections-menu">
         <h3>Connected Drives</h3>
         <div class="drives-container">
@@ -117,6 +116,5 @@ $connectedDrives = getConnectedDrives($user_id);
         </div>
     </div>
 </aside>
-
 
 <script src="../../js/sidebar.js"></script>

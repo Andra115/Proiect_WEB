@@ -63,6 +63,14 @@ clearBtn.addEventListener('click', async function() {
             fileItem.innerHTML = `
                 <div class=\"file-info\">
                     <div class=\"file-name-section\">
+                        <div class="file-menu-wrapper">
+                                    <button class="file-menu-btn" onclick="toggleMenu(this)">&#x22EE;</button>
+                                    <div class="file-menu">
+                                        <button class="file-menu-option" onclick="renameFile('${file.file_id}', '${file.user_id}')">Rename</button>
+                                        <button class="file-menu-option" onclick="deleteFile('${file.file_id}', '${file.user_id}')">Delete</button>
+                                        <button class="file-menu-option" onclick="downloadFile('${file.file_id}', '${file.user_id}')">Download</button>
+                                    </div>
+                                </div>
                         <img src=\"${icon}\" alt=\"File\" class=\"file-icon\">
                         <span class=\"file-name\">${file.file_name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
                     </div>
@@ -107,6 +115,14 @@ document.getElementById('search-form').addEventListener('submit', async function
             fileItem.innerHTML = `
                 <div class=\"file-info\">
                     <div class=\"file-name-section\">
+                        <div class="file-menu-wrapper">
+                                    <button class="file-menu-btn" onclick="toggleMenu(this)">&#x22EE;</button>
+                                    <div class="file-menu">
+                                        <button class="file-menu-option" onclick="renameFile('${file.file_id}', '${file.user_id}')">Rename</button>
+                                        <button class="file-menu-option" onclick="deleteFile('${file.file_id}', '${file.user_id}')">Delete</button>
+                                        <button class="file-menu-option" onclick="downloadFile('${file.file_id}', '${file.user_id}')">Download</button>
+                                    </div>
+                                </div>
                         <img src=\"${icon}\" alt=\"File\" class=\"file-icon\">
                         <span class=\"file-name\">${file.file_name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
                     </div>
