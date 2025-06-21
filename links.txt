@@ -11,6 +11,7 @@ http://localhost:8000/php/cloud/box_oauth2callback.php
 
 
 
+
 <br/><b>Warning</b>:  Undefined array key "client_id" in <b>D:\Andra\college\web\Proiect_WEB\php\rename.php</b>on line<b>130</b>
 <br /><br/><b>Warning</b>:  Undefined array key "client_secret" in <b>D:\Andra\college\web\Proiect_WEB\php\rename.php</b>on line<b>131</b>
 <br /><br/><b>Warning</b>:  Undefined array key "refresh_token" in <b>D:\Andra\college\web\Proiect_WEB\php\rename.php</b>on line<b>139</b><br />{
@@ -45,4 +46,54 @@ http://localhost:8000/php/cloud/box_oauth2callback.php
     "http_code": 401,
     "chunk_file_id": "1TdSESE7SkDfAUhkT07X3JDAAGC5V8-Rj",
     "entered": "true - google"
+}
+
+
+
+<br />
+<b>Warning</b>:  Undefined variable $chunkId in <b>D:\Andra\college\web\Proiect_WEB\php\download.php</b> on line <b>79</b><br />
+<br />
+<b>Warning</b>:  Undefined variable $chunkId in <b>D:\Andra\college\web\Proiect_WEB\php\download.php</b> on line <b>89</b><br />
+{"success":false,"message":"Account info not found","chunk_file_id":null}
+
+
+
+<br/><b>Warning</b>:  Cannot modify header information - headers already sent in <b>D:\Andra\college\web\Proiect_WEB\php\download.php</b>on line<b>207</b><br /><br/><b>Warning</b>:  Undefined variable $fileName in <b>D:\Andra\college\web\Proiect_WEB\php\download.php</b>on line<b>208</b><br /><br/><b>Warning</b>:  Cannot modify header information - headers already sent in <b>D:\Andra\college\web\Proiect_WEB\php\download.php</b>on line<b>208</b><br /><br/><b>Warning</b>:  Cannot modify header information - headers already sent in <b>D:\Andra\college\web\Proiect_WEB\php\download.php</b>on line<b>209</b><br /><br/><b>Warning</b>:  Cannot modify header information - headers already sent in <b>D:\Andra\college\web\Proiect_WEB\php\download.php</b>on line<b>210</b><br /><br/><b>Warning</b>:  Cannot modify header information - headers already sent in <b>D:\Andra\college\web\Proiect_WEB\php\download.php</b>on line<b>211</b><br />����
+
+
+1AOVg9t3lNDVieBF9a7tYeBI8S04YVhBU9PdUYzmYvuY
+
+
+
+
+
+{
+    "success": true,
+    "token": "dl_6855ceed1e4c20.93067450"
+}<br/><b>Warning</b>:  Undefined variable $download in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>73</b><br /><br/><b>Warning</b>:  Trying to access array offset on null in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>73</b><br />
+
+
+
+
+<br/><b>Warning</b>:  Undefined variable $credsGoogle in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>75</b><br /><br/><b>Warning</b>:  Trying to access array offset on null in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>75</b><br /><br/><b>Warning</b>:  Trying to access array offset on null in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>75</b><br /><br/><b>Warning</b>:  Undefined variable $credsGoogle in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>76</b><br /><br/><b>Warning</b>:  Trying to access array offset on null in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>76</b><br /><br/><b>Warning</b>:  Trying to access array offset on null in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>76</b><br />{
+    "success": false,
+    "message": "Access token refresh failed. Reconnect account.",
+    "token_data": {
+        "error": "invalid_request",
+        "error_description": "Could not determine client ID from request."
+    },
+    "provider": "google",
+    "account_id": 10
+}
+
+
+<br/><b>Warning</b>:  Undefined variable $credsGoogle in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>75</b><br /><br/><b>Warning</b>:  Trying to access array offset on null in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>75</b><br /><br/><b>Warning</b>:  Trying to access array offset on null in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>75</b><br /><br/><b>Warning</b>:  Undefined variable $credsGoogle in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>76</b><br /><br/><b>Warning</b>:  Trying to access array offset on null in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>76</b><br /><br/><b>Warning</b>:  Trying to access array offset on null in <b>D:\Andra\college\web\Proiect_WEB\php\prepareDownload.php</b>on line<b>76</b><br />{
+    "success": false,
+    "message": "Access token refresh failed. Reconnect account.",
+    "token_data": {
+        "error": "invalid_request",
+        "error_description": "Could not determine client ID from request."
+    },
+    "provider": "google",
+    "account_id": 10
 }

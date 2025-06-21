@@ -1,5 +1,6 @@
 <?php
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
+session_start();
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -12,8 +13,14 @@ $client->addScope('https://www.googleapis.com/auth/drive');
 $client->setAccessType('offline');
 $client->setPrompt('consent');
 
-
 $authUrl = $client->createAuthUrl();
-header('Location: ' . filter_var($authUrl, FILTER_SANITIZE_URL));
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    echo json_encode(['auth_url' => $authUrl]);
+    exit;
+} else {
+    header('Location: ' . filter_var($authUrl, FILTER_SANITIZE_URL));
+}
 ?>
  

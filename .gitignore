@@ -18,3 +18,5 @@ php/db.php
 db.php
 db_credentials.json
 db_credentials.json/
+jwt.json
+jwt.json/

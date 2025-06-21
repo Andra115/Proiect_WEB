@@ -7,14 +7,17 @@
 </head>
 <body>
   <script>
+    const isDownload = window.location.href.includes('download.php') ||
+                     window.location.href.includes('prepareDownload.php');
+  if (isDownload) {
+    
+  } else {
     const token = localStorage.getItem('jwt') || sessionStorage.getItem('jwt');
-
     if (token) {
       try {
         jwt_decode(token);
         window.location.href = 'php/welcome.php';
       } catch (err) {
-        console.warn('Invalid JWT:', err);
         localStorage.removeItem('jwt');
         sessionStorage.removeItem('jwt');
         window.location.href = 'php/login.php';
@@ -22,6 +25,7 @@
     } else {
       window.location.href = 'php/login.php';
     }
+  }
   </script>
 </body>
 </html>

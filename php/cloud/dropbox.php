@@ -8,7 +8,6 @@ $client_secret = $creds['client_secret'];
 $redirect_uri = $creds['redirect_uri'];
 $scopes = $creds['scopes'];
 
-
 $state = bin2hex(random_bytes(16));
 $_SESSION['oauth_state'] = $state;
 
@@ -22,6 +21,12 @@ $auth_url = 'https://www.dropbox.com/oauth2/authorize?' . http_build_query([
     'force_reapprove' => 'true'
 ]);
 
-header("Location: $auth_url");
-exit;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    echo json_encode(['auth_url' => $auth_url]);
+    exit;
+} else {
+    header("Location: $auth_url");
+    exit;
+}
 ?>

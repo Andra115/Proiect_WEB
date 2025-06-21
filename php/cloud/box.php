@@ -17,11 +17,17 @@ $params = http_build_query([
     'client_id' => $client_id,
     'redirect_uri' => $redirect_uri,
     'state' => $state,
-    'scope' => $scope,
+    'scope' => $scopes,
 ]);
 
 $auth_url = "https://account.box.com/api/oauth2/authorize?$params";
 
-header("Location: $auth_url");
-exit;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    echo json_encode(['auth_url' => $auth_url]);
+    exit;
+} else {
+    header("Location: $auth_url");
+    exit;
+}
 ?>
