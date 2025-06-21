@@ -8,7 +8,9 @@
 <body>
   <script>
     const isDownload = window.location.href.includes('download.php') ||
-                     window.location.href.includes('prepareDownload.php');
+                     window.location.href.includes('prepareDownload.php') ||
+                     window.location.href.includes('footer.php') ||
+                      window.location.href.includes('get_storage.php') ;
   if (isDownload) {
     
   } else {
