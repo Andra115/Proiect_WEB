@@ -3,9 +3,14 @@ error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
 session_start();
 
 require_once __DIR__ . '/../../vendor/autoload.php';
+$googleCredentialsJson = getenv('GOOGLE_DRIVE_CREDS');
+$tempCredPath = sys_get_temp_dir() . '/google-creds.json';
+file_put_contents($tempCredPath, $googleCredentialsJson);
+
 
 $client = new Google_Client();
-$client->setAuthConfig(__DIR__ . '/../../driver_credentials.json');
+$client->setAuthConfig($tempCredPath);
+//$client->setAuthConfig(__DIR__ . '/../../driver_credentials.json');
 $client->addScope(\Google\Service\Drive::DRIVE_FILE);
 $client->addScope('https://www.googleapis.com/auth/userinfo.email');
 $client->addScope('https://www.googleapis.com/auth/userinfo.profile');

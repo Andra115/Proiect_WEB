@@ -1,7 +1,17 @@
 <?php
 session_start();
 
-$creds = json_decode(file_get_contents(__DIR__ . '/../../dropbox_credentials.json'), true);
+/*$creds = json_decode(file_get_contents(__DIR__ . '/../../dropbox_credentials.json'), true);
+
+$client_id = $creds['client_id'];
+$client_secret = $creds['client_secret'];
+$redirect_uri = $creds['redirect_uri'];
+$scopes = $creds['scopes'];*/
+
+$creds = json_decode(getenv("DROPBOX_CREDS"), true);
+if (!$creds) {
+    die('Error: Invalid credentials file');
+}
 
 $client_id = $creds['client_id'];
 $client_secret = $creds['client_secret'];
