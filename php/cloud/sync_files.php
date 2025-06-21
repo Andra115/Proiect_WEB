@@ -171,8 +171,8 @@ try {
         $all_files = listAllBoxFiles($access_token, '0');
         $total_used = array_sum(array_column($all_files, 'size'));
 
-        $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space = ?, space_available = ? WHERE email = ? AND provider = 'box'");
-        $stmt->execute([10737418240, 10737418240 - $total_used, $email]);
+        $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space = ?, space_available = ? WHERE email = ? AND provider = 'box' AND user_id = ?");
+        $stmt->execute([10737418240, 10737418240 - $total_used, $email, $user_id]);
     }
     else if ($provider == 'dropbox'){
         $all_files = listAllDropboxFiles($access_token);

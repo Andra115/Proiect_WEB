@@ -176,5 +176,6 @@ function updateFileType(type) {
                 window.location.reload();
             });
     }
+}
 </script>
 <script src="../../js/connectClouds.js"></script> 

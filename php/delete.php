@@ -327,6 +327,23 @@ foreach ($chunkIds as $chunkId) {
 
 
 if($nr == $nrOfChunks){
+
+    try{
+        $stmt = $pdo->prepare("SELECT ac.providor, ac.access_token, ac.email, ac.user_id FROM cloud_accounts ac JOIN file_chunks fc ON ac.account_id = fc.account_id WHERE fc.file_id = ? LIMIT 1");
+        $stmt->execute([$file_id]);
+        $accountInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+       
+        
+    }catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+
+    $provider = $accountInfo['providor'] ?? null;
+    $accessToken = $accountInfo['access_token'] ?? null;
+    $email = $accountInfo['email'] ?? null;
+    $user_id = $accountInfo['user_id'] ?? null;
    try{ 
     $stmt = $pdo->prepare("DELETE FROM files WHERE file_id=?");
     $stmt->execute([$file_id]);
@@ -335,10 +352,91 @@ if($nr == $nrOfChunks){
         echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
         exit;
     }
+
+    if ($provider == 'box') {
+         $all_files = listAllBoxFiles($accessToken, '0');
+        $total_used = array_sum(array_column($all_files, 'size'));
+
+        $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space = ?, space_available = ? WHERE email = ? AND provider = 'box' AND user_id = ?");
+        $stmt->execute([10737418240, 10737418240 - $total_used, $email, $user_id]);
+    } else if ($provider == 'dropbox') {
+
+        $ch = curl_init("https://api.dropboxapi.com/2/users/get_space_usage");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: Bearer $accessToken","Content-Type: application/json" ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, 'null');
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $user_storage_info = json_decode($response, true);
+        $used = $user_storage_info['used'] ?? null;
+        $allocation = $user_storage_info['allocation'] ?? null;
+        $total_space = $allocation['allocated'] ?? 2147483648; //it should be able to get this info but in case it doesnt we ll assume 2GB free plan
+        
+        $space_available = $total_space - $used;
+
+         $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space= ?, space_available=?WHERE email = ? AND provider = 'dropbox' AND user_id = ?");
+         $stmt->execute([$total_space, $space_available, $email, $user_id]);
+
+    } else if ($provider == 'google') {
+
+        $client->setAccessToken($accessToken);
+
+        $driveService = new Google\Service\Drive($client);
+        $about = $driveService->about->get(['fields' => 'storageQuota']);
+        $user_storage_info = $about->getStorageQuota();
+        $total_space = $user_storage_info->getLimit() ?? 16106127360;
+        $used = $user_storage_info->getUsage() ?? 0;
+
+        $space_available= $total_space - $used;
+
+        $stmt = $pdo->prepare("UPDATE cloud_accounts SET total_space = ?, space_available = ? WHERE email = ? AND provider = 'google' AND user_id = ?");
+        $stmt->execute([$total_space,$space_available, $email, $user_id]);
+        
+    } else {
+        echo json_encode(['success' => true, 'message' => 'Space couldnt be synced after deletion.']);
+        exit;
+    }
+
     echo json_encode(['success' => true, 'message' => 'File deleted successfully']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Some chunks could not be deleted. '.$nr.'/'.$nrOfChunks]);
 }
+
+
+function listAllBoxFiles($access_token, $folderId = '0')
+{
+    $files = [];
+    $url = "https://api.box.com/2.0/folders/$folderId/items?limit=1000&fields=id,name,size,created_at,extension,type";
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: Bearer $access_token",
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    $data = json_decode($response, true);
+    if (!isset($data['entries'])) return $files;
+
+    foreach ($data['entries'] as $item) {
+        if ($item['type'] === 'file') {
+            $files[] = [
+                'id' => $item['id'],
+                'name' => $item['name'],
+                'size' => $item['size']
+            ];
+        } elseif ($item['type'] === 'folder') {
+            $files = array_merge($files, listAllBoxFiles($access_token, $item['id']));
+        }
+    }
+
+    return $files;
+}
+
 
 
 
