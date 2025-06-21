@@ -1,3 +1,4 @@
+
 FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y \
@@ -7,16 +8,20 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     zip \
-    && docker-php-ext-install pdo pdo_pgsql curl \
-    && a2enmod rewrite \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    curl \
+    && a2enmod rewrite
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+
 WORKDIR /var/www/html/
 
-COPY . .
+COPY . /var/www/html/
 
-RUN [ -f composer.json ] && composer install --no-dev --optimize-autoloader || echo "No composer.json found"
+
+RUN [ -f composer.json ] && composer install || echo "No composer.json found"
 
 EXPOSE 80
