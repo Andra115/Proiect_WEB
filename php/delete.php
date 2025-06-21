@@ -1,9 +1,14 @@
 <?php
 session_start();
 require_once 'db.php';
+/*
 $credsBox = json_decode(file_get_contents(__DIR__ . '/../box_credentials.json'), true);
 $credsDropbox = json_decode(file_get_contents(__DIR__ . '/../dropbox_credentials.json'), true);
 $credsGoogle = json_decode(file_get_contents(__DIR__ . '/../driver_credentials.json'), true);
+*/
+$credsBox = json_decode(getenv("BOX_CREDS"), true);
+$credsDropbox = json_decode(getenv("DROPBOX_CREDS"), true);
+$credsGoogle = json_decode(getenv("GOOGLE_DRIVE_CREDS"), true);
 
 if (!$credsBox || !$credsDropbox || !$credsGoogle) {
     http_response_code(500);

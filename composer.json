@@ -1,0 +1,12 @@
+{
+    "name": "andra-marius/cloud-9",
+    "description": "A PHP app that works like an universal cloud storage",
+    "require": {
+        
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

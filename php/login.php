@@ -20,7 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $loginSuccess = $stmt->fetchColumn();
 
             if ($loginSuccess) {
-                $jwtConfig = json_decode(file_get_contents(__DIR__ . '/../jwt.json'), true);
+                /*$jwtConfig = json_decode(file_get_contents(__DIR__ . '/../jwt.json'), true);
+                $key = $jwtConfig['key'];*/
+                $jwtConfig = json_decode(getenv("JWT_JSON"), true);
                 $key = $jwtConfig['key'];
                 $iss_time = time();
                 $userIdStmt = $pdo->prepare('SELECT user_id FROM users WHERE email = :email');
@@ -31,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     "iss" => "https://localhost:8000",
                     "iat" => $iss_time,
                     "exp" => $iss_time + 2592000,
-                    "user_id"=> $userId
+                    "user_id" => $userId
                 ];
                 $jwt = JWT::encode($payload, $key, 'HS256');
                 $_SESSION['user_id'] = $userId;
@@ -78,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <title>Login to Cloud9</title>
@@ -86,9 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Lemon&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css" />
 </head>
+
 <body>
     <div class="login">
-        <img src="../assets/logo_white_on_blue_background.jpeg" alt="Logo" class="logo"/>
+        <img src="../assets/logo_white_on_blue_background.jpeg" alt="Logo" class="logo" />
         <form method="POST" action="">
             <input type="text" name="email" placeholder="Email" required class="loginFormItem">
             <input type="password" name="password" placeholder="Password" required class="loginFormItem">
@@ -104,4 +108,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <script src="../../js/login.js"></script>
 </body>
+
 </html>

@@ -20,7 +20,9 @@ if (!$jwt) {
 }
 
 try {
-    $jwtConfig = json_decode(file_get_contents(__DIR__ . '/../jwt.json'), true);
+    /*$jwtConfig = json_decode(file_get_contents(__DIR__ . '/../jwt.json'), true);
+    $key = $jwtConfig['key'];*/
+    $jwtConfig = json_decode(getenv("JWT_JSON"), true);
     $key = $jwtConfig['key'];
     $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
     $userId = $decoded->user_id;

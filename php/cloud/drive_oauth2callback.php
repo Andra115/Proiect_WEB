@@ -3,15 +3,20 @@
 session_start();
 
 require_once __DIR__ . '/../db.php';
-require_once __DIR__ . '/../../vendor/autoload.php';
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: /../login.php");
     exit;
 }
 $user_id = $_SESSION['user_id'];
 
+$googleCredentialsJson = getenv('GOOGLE_DRIVE_CREDS');
+$tempCredPath = sys_get_temp_dir() . '/google-creds.json';
+file_put_contents($tempCredPath, $googleCredentialsJson);
+
 $client = new Google_Client();
-$client->setAuthConfig(__DIR__ . '/../../driver_credentials.json');
+$client->setAuthConfig($tempCredPath);
+//$client->setAuthConfig(__DIR__ . '/../../driver_credentials.json');
 $client->addScope(Google\Service\Drive::DRIVE); 
 $client->addScope('https://www.googleapis.com/auth/userinfo.email');
 $client->addScope('https://www.googleapis.com/auth/userinfo.profile'); 

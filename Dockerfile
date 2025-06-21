@@ -1,11 +1,25 @@
-# Use official PHP image with Apache web server
+
 FROM php:8.2-apache
 
-# Install PHP extensions needed for PostgreSQL support
-RUN docker-php-ext-install pdo pdo_pgsql
+RUN apt-get update && apt-get install -y \
+    unzip \
+    libcurl4-openssl-dev \
+    libpq-dev \
+    curl \
+    git \
+    zip \
+    && docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    curl \
+    && a2enmod rewrite
 
-# Copy your project files to Apache's web root
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 COPY . /var/www/html/
 
-# Expose port 80 (default HTTP port)
+WORKDIR /var/www/html/
+
+RUN [ -f composer.json ] && composer install || echo "No composer.json found"
+
 EXPOSE 80

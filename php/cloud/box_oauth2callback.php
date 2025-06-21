@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = $_SESSION['user_id'];
 
-$creds_file = __DIR__ . '/../../box_credentials.json';
+/*$creds_file = __DIR__ . '/../../box_credentials.json';
 if (!file_exists($creds_file)) {
     die('Error : Credentials file not found');
 }
@@ -20,7 +20,16 @@ if (!$creds) {
 $client_id = $creds['client_id'];
 $client_secret = $creds['client_secret'];
 $redirect_uri = $creds['redirect_uri'];
+*/
 
+$creds = json_decode(getenv("BOX_CREDS"), true);
+if (!$creds) {
+    die('Error: Invalid credentials file');
+}
+
+$client_id = $creds['client_id'];
+$client_secret = $creds['client_secret'];
+$redirect_uri = $creds['redirect_uri'];
 
 if (!isset($_GET['code'], $_GET['state']) || $_GET['state'] !== $_SESSION['box_oauth_state']) {
     die('Invalid OAuth state');

@@ -133,13 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            $stmt = $pdo->prepare("
-                SELECT fc.chunk_id, fc.chunk_index, ac.provider, ac.access_token, ac.refresh_token, ac.token_expiry, ac.account_id 
-                FROM file_chunks fc 
-                JOIN cloud_accounts ac ON fc.account_id = ac.account_id 
-                WHERE fc.file_id = ? 
-                ORDER BY fc.chunk_index ASC
-            ");
+            $stmt = $pdo->prepare("SELECT fc.chunk_id, fc.chunk_index, ac.provider, ac.access_token, ac.refresh_token, ac.token_expiry, ac.account_id 
+                 FROM file_chunks fc JOIN cloud_accounts ac ON fc.account_id = ac.account_id WHERE fc.file_id = ? ORDER BY fc.chunk_index ASC");
             $stmt->execute([$fileId]);
             $cloudChunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

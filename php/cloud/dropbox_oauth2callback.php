@@ -7,6 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = $_SESSION['user_id'];
 
+/*
 $creds_file = __DIR__ . '/../../dropbox_credentials.json';
 if (!file_exists($creds_file)) {
     die('Error : Credentials file not found');
@@ -20,7 +21,16 @@ if (!$creds) {
 $client_id = $creds['client_id'];
 $client_secret = $creds['client_secret'];
 $redirect_uri = $creds['redirect_uri'];
+*/
 
+$creds = json_decode(getenv("DROPBOX_CREDS"), true);
+if (!$creds) {
+    die('Error: Invalid credentials file');
+}
+
+$client_id = $creds['client_id'];
+$client_secret = $creds['client_secret'];
+$redirect_uri = $creds['redirect_uri'];
 
 if (isset($_GET['error'])) {
     die('OAuth error: ' . htmlspecialchars($_GET['error_description'] ?? $_GET['error']));
