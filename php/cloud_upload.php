@@ -1,4 +1,9 @@
 <?php
+ini_set('memory_limit', '512M');
+ini_set('upload_max_filesize', '50G');
+ini_set('post_max_size', '50G');
+ini_set('max_execution_time', 3600); 
+ini_set('max_input_time', 3600);
 require_once 'db.php';
 
 /*$credsBox = json_decode(file_get_contents(__DIR__ . '/../box_credentials.json'), true);
