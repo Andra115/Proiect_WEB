@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         <div class="noAccount">No account? <a href="signup.php">Sign up here.</a></div>
     </div>
-    <script src="../../js/login.js"></script>
+    <script src="../js/login.js"></script>
 </body>
 
 </html>
