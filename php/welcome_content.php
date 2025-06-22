@@ -36,4 +36,4 @@ $user_id = $_SESSION['user_id'];
     </div>
 </div>
 
-<script src="../../js/welcome_content.js"></script>
+<script src="../js/welcome_content.js"></script>

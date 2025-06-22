@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ro" prefix="schema: http://schema.org/">
+<head>
+    <meta charset="UTF-8">
+    <title>Specificația Cerințelor Sistemului - Cloud9 Storage</title>
+    <meta name="author" content="Echipa Cloud9 Storage">
+    <meta name="datePublished" content="2025-06-23">
+    <link rel="stylesheet" href="https://w3c.github.io/scholarly-html/css/scholarly.min.css">
+    <style>
+    figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 2em 0;
+    }
+
+    figure img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
+    figure figcaption {
+        text-align: center;
+        margin-top: 0.5em;
+    }
+    </style>
+</head>
+<body typeof="schema:ScholarlyArticle">
+    <div style="margin-bottom: -10em;">
+        <a href="php/welcome.php"> &larr; Go back</a>
+    </div>
+    <header>
+        <h1 property="schema:name">Specificația Cerințelor Sistemului (SRS) pentru Cloud9 Storage</h1>
+        <p property="schema:author">Budăi Marius Gabriel și Lungu Andra Iasmina</p>
+        <time property="schema:datePublished" datetime="2025-06-23">23 iunie 2025</time>
+    </header>
+
+    <section typeof="schema:Abstract">
+        <h2>Rezumat</h2>
+        <p>Acest document prezintă cerințele funcționale și nefuncționale pentru aplicația web Cloud9 Storage, un sistem de gestionare a fișierelor în cloud, destinat utilizatorilor care doresc să își organizeze, încarce și acceseze fișierele personale într-un mod securizat și eficient.</p>
+    </section>
+
+    <section>
+        <h2>1. Introducere</h2>
+
+        <h3>1.1 Scop</h3>
+        <p>Scopul acestui document este de a defini cerințele software pentru aplicația Cloud9 Storage. Acesta descrie funcționalitățile principale, constrângerile sistemului, interacțiunile cu utilizatorul și cerințele externe, oferind o bază pentru dezvoltare, testare și mentenanță.</p>
+
+        <h3>1.2 Utilizatori țintă</h3>
+        <p>Utilizatorii țintă sunt persoane fizice care doresc să-și gestioneze fișierele în siguranță în cloud. Aceștia pot fi studenți, profesioniști sau utilizatori obișnuiți care caută un sistem simplu și eficient de stocare și accesare a fișierelor personale.</p>
+    </section>
+
+    <section>
+        <h2>2. Cerințe generale</h2>
+        <ul>
+            <li>Aplicația trebuie să fie accesibilă prin intermediul unui browser web modern.</li>
+            <li>Interfața trebuie să fie intuitivă și responsivă.</li>
+            <li>Toate operațiunile critice trebuie să fie protejate prin autentificare.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>3. Cerințe funcționale</h2>
+
+        <h3>3.1 Autentificare și înregistrare utilizator</h3>
+        <ul>
+            <li>3.1.1 Utilizatorii trebuie să se poată înregistra cu o adresă de email și o parolă.</li>
+            <li>3.1.2 Utilizatorii trebuie să se poată autentifica pentru a accesa funcționalitățile aplicației.</li>
+        </ul>
+
+        <h3>3.2 Încărcare și descărcare fișiere</h3>
+        <ul>
+            <li>3.2.1 Utilizatorii pot încărca fișiere de diferite tipuri (documente, imagini, etc.).</li>
+            <li>3.2.2 Utilizatorii pot descărca fișierele proprii din cloud.</li>
+        </ul>
+
+        <h3>3.3 Vizualizare și organizare fișiere</h3>
+        <ul>
+            <li>3.3.1 Fișierele sunt afișate într-o listă cu detalii relevante (nume, dată încărcare, tip).</li>
+            <li>3.3.2 Utilizatorii pot filtra fișierele după tip (ex: imagini, PDF, etc.).</li>
+            <li>3.3.3 Utilizatorii pot căuta fișiere după nume.</li>
+        </ul>
+
+        <h3>3.4 Statistici</h3>
+        <ul>
+            <li>3.4.1 Aplicația afișează numărul total de fișiere și spațiul ocupat de acestea.</li>
+        </ul>
+
+        <h3>3.5 Deconectare</h3>
+        <ul>
+            <li>3.5.1 Utilizatorii se pot deconecta în siguranță din aplicație.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>4. Cerințe de interacțiune cu utilizatorul</h2>
+        <ul>
+            <li>4.1 Interfața trebuie să ofere feedback vizual pentru acțiuni (ex: încărcare, ștergere, filtrare).</li>
+            <li>4.2 Operațiunile de filtrare și căutare trebuie să fie asincrone (fără reîncărcarea paginii).</li>
+            <li>4.3 Erorile trebuie afișate clar și concis utilizatorului.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>5. Cerințe nefuncționale</h2>
+        <ul>
+            <li>5.1 Aplicația trebuie să asigure securitatea datelor utilizatorilor (parole criptate, acces restricționat).</li>
+            <li>5.2 Performanța aplicației trebuie să permită încărcarea rapidă a fișierelor și interacțiuni fluide.</li>
+            <li>5.3 Aplicația trebuie să fie compatibilă cu principalele browsere moderne.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>6. Constrângeri</h2>
+        <ul>
+            <li>6.1 Aplicația va fi dezvoltată folosind PHP pentru backend și PostgreSQL pentru stocarea datelor.</li>
+            <li>6.2 Interfața va fi realizată în HTML, CSS și JavaScript, fără utilizarea de framework-uri.</li>
+            <li>6.3 Aplicația va fi găzduită pe Railway și trebuie să suporte conectivitate externă securizată.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>7. Cerințe de calitate</h2>
+        <ul>
+            <li>7.1 Sistemul trebuie să funcționeze fără erori critice în cel puțin 95% din cazuri (fiabilitate).</li>
+            <li>7.2 Interfața utilizator trebuie să poată fi înțeleasă și folosită fără training (usability).</li>
+            <li>7.3 Aplicația trebuie să ruleze atât pe desktop cât și pe dispozitive mobile (portabilitate).</li>
+            <li>7.4 Parolele trebuie să fie criptate și datele protejate împotriva accesului neautorizat (securitate).</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>8. Arhitectura sistemului</h2>
+        <p>Arhitectura aplicației Cloud9 Storage este prezentată utilizând modelul C4, care ilustrează progresiv: contextul aplicației, containerele sale principale și componentele backend-ului.</p>
+        <figure>
+            <img src="assets/C4Diagram.drawio.png" alt="Arhitectura C4 a aplicației Cloud9 Storage">
+            <figcaption><strong>Figura:</strong> Diagrama arhitecturală a sistemului, care include cele trei stagii: <em>Context</em>, <em>Container</em> și <em>Component</em>.</figcaption>
+        </figure>
+    </section>
+
+    <section>
+        <h2>9. Glosar</h2>
+        <ul>
+            <li><strong>Cloud9 Storage</strong> – Aplicația propusă pentru gestionarea fișierelor în cloud.</li>
+            <li><strong>UI</strong> – Interfața utilizator (User Interface).</li>
+            <li><strong>Backend</strong> – Componenta aplicației care rulează pe server și gestionează logica și datele.</li>
+            <li><strong>Frontend</strong> – Interfața grafică vizibilă utilizatorului.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>10. Referințe</h2>
+        <ul>
+            <li><a href="https://w3c.github.io/scholarly-html/">Scholarly HTML</a></li>
+            <li><a href="https://github.com/rick4470/IEEE-SRS-Tempate#readme">IEEE System Requirements Specification Template</a></li>
+        </ul>
+    </section>
+</body>
+</html>
