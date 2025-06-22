@@ -67,6 +67,9 @@ session_start();
                 </div>
                 <div id="update-message" class="message" style="display: none;"></div>
             </div>
+            <div class="documentation-link-container">
+                <a href="../documentatie.html" class="documentation-link">The app's documentation</a>
+            </div>
             <div class="profile-actions">
                 <button onclick="window.location.href='welcome.php'" class="back-btn">Back to Dashboard</button>
                 <button onclick="handleLogout()" class="logout-btn">Logout</button>

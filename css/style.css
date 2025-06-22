@@ -992,6 +992,77 @@ h2 {
 }
 
 @media (max-width: 768px) {
+    .storage-card ul {
+        padding: 5px 0;
+        font-size: 0.75em;
+    }
+
+    .stats-row {
+        flex-direction: column;
+    }
+
+    .storage-card,
+    .upload-card {
+        width: 100%;
+    }
+
+    .files-header,
+    .files-list,
+    .file-info {
+        width: 100%;
+    }
+
+    .file-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 0;
+    }
+
+    .file-name-section {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        width: 100%;
+        height: auto;
+        gap: 10px;
+    }
+
+    .file-name {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .file-date {
+        margin-left: 0;
+        font-size: 0.85em;
+        color: #888;
+        align-self: flex-start;
+        margin-left: 34px; 
+    }
+
+    .file-menu-wrapper {
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    .file-menu-btn {
+        transform: translateY(0);
+    }
+
+    .files-header {
+        display: none;
+    }
+
+    .file-item {
+        padding: 10px;
+        min-height: auto;
+    }
+
     body {
         overflow-y: auto;
     }
@@ -1315,4 +1386,17 @@ h2 {
     text-align: center;
     padding: 20px;
     color: #1c0856;
+}
+
+.documentation-link-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.documentation-link {
+    color: #1c0856;
+    font: Lemon, serif;
+    font-size: 1em;
 }
