@@ -9,6 +9,30 @@ function updateClearBtnVisibility() {
 searchBar.addEventListener('input', updateClearBtnVisibility);
 document.addEventListener('DOMContentLoaded', updateClearBtnVisibility);
 
+function isMobile() {
+    return window.innerWidth <= 768;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    
+    if (isMobile()) {
+        return date.toLocaleString('en-US', { 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    } else {
+        return date.toLocaleString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric', 
+            hour: 'numeric', 
+            minute: '2-digit', 
+            hour12: true 
+        });
+    }
+}
+
 clearBtn.addEventListener('click', async function() {
     searchBar.value = '';
     updateClearBtnVisibility();
@@ -52,7 +76,7 @@ clearBtn.addEventListener('click', async function() {
                         <img src=\"${icon}\" alt=\"File\" class=\"file-icon\">
                         <span class=\"file-name\">${file.file_name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
                     </div>
-                    <span class=\"file-date\">${new Date(file.uploaded_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                    <span class=\"file-date\">${formatDate(file.uploaded_at)}</span>
                 </div>
             `;
             filesList.appendChild(fileItem);
@@ -104,7 +128,7 @@ document.getElementById('search-form').addEventListener('submit', async function
                         <img src=\"${icon}\" alt=\"File\" class=\"file-icon\">
                         <span class=\"file-name\">${file.file_name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
                     </div>
-                    <span class=\"file-date\">${new Date(file.uploaded_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                    <span class=\"file-date\">${formatDate(file.uploaded_at)}</span>
                 </div>
             `;
             filesList.appendChild(fileItem);
