@@ -27,4 +27,6 @@ RUN [ -f composer.json ] && composer install || echo "No composer.json found"
 RUN mkdir -p /var/www/html/uploads/chunks && \
     chmod -R 777 /var/www/html/uploads
 
+COPY php.ini /usr/local/etc/php/
+
 EXPOSE 80
