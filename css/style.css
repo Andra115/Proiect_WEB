@@ -992,6 +992,33 @@ h2 {
 }
 
 @media (max-width: 768px) {
+    .stats-row {
+        flex-direction: column;
+    }
+
+    .storage-card,
+    .upload-card {
+        width: 100%;
+    }
+
+    .files-header,
+    .files-list,
+    .file-info {
+        width: 100%;
+    }
+
+    .file-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .file-date {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
     body {
         overflow-y: auto;
     }
