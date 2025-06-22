@@ -1013,8 +1013,23 @@ h2 {
         gap: 8px;
     }
 
+    .file-name-section {
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
     .file-date {
         margin-left: 0;
+        margin-top: 4px;
+        font-size: 0.85em;
+        color: #888;
+        width: 100%;
+    }
+
+    .file-menu-wrapper {
+        align-self: flex-end;
+        margin-top: 8px;
     }
 }
 
