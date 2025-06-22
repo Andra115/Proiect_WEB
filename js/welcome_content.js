@@ -199,7 +199,7 @@ function refreshStats() {
         .then(data => {
             if (data.success) {
                 document.getElementById('totalFiles').textContent = data.totalFiles;
-                document.getElementById('totalGB').textContent = data.totalGB;
+                document.getElementById('totalGB').textContent = data.totalGB+'GB';
             } else {
                 console.error("Stats fetch failed:", data.error);
             }
