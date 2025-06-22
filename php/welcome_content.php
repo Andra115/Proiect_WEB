@@ -16,7 +16,7 @@ $user_id = $_SESSION['user_id'];
             <h3>Quick Stats</h3>
             <ul id="statsList">
                 <li>Total Files: <span id="totalFiles" class="loading-message">Loading...</span></li>
-                <li>Files Occupy: <span id="totalGB" class="loading-message">Loading...</span> GB</li>
+                <li>Files Occupy: <span id="totalGB" class="loading-message">Loading...</span></li>
             </ul>
         </div>
         <div class="upload-card">
