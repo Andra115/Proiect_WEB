@@ -1317,6 +1317,13 @@ h2 {
     color: #1c0856;
 }
 
+.documentation-link-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
 .documentation-link {
     color: #1c0856;
     font: Lemon, serif;
