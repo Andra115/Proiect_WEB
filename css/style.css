@@ -1137,17 +1137,6 @@ h2 {
     }
 }
 
-@media (max-width: 480px) {
-    .login {
-        width: 90%;
-        padding: 10px;
-    }
-    
-    .loginFormItem {
-        max-width: 90% !important;
-    }
-}
-
 .edit-field {
     display: flex;
     align-items: center;
