@@ -1,5 +1,9 @@
 <?php
 ini_set('memory_limit', '512M');
+ini_set('upload_max_filesize', '50G');
+ini_set('post_max_size', '50G');
+ini_set('max_execution_time', 3600); 
+ini_set('max_input_time', 3600);
 session_start();
 require_once 'db.php';
 require_once 'cloud_upload.php';
