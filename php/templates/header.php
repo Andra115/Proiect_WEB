@@ -20,7 +20,5 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'User';
         </a>
     </div>
 </header> 
-
-
 <script src="../../js/header.js"></script> 
 

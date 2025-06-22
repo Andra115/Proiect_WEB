@@ -1316,3 +1316,9 @@ h2 {
     padding: 20px;
     color: #1c0856;
 }
+
+.documentation-link {
+    color: #1c0856;
+    font: Lemon, serif;
+    font-size: 1em;
+}
