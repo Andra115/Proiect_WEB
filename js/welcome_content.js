@@ -167,6 +167,7 @@ function refreshFiles() {
                         });
 
                         item.innerHTML = `
+                        <div class="file-info">
                             <div class="file-name-section">
                                 <div class="file-menu-wrapper">
                                     <button class="file-menu-btn" onclick="toggleMenu(this)">&#x22EE;</button>
@@ -180,6 +181,7 @@ function refreshFiles() {
                                 <span class="file-name">${file.file_name}</span>
                             </div>
                             <span class="file-date">${formattedDate}</span>
+                        </div>
                         `;
                         container.appendChild(item);
                     });

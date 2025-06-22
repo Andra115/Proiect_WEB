@@ -35,29 +35,7 @@ document.querySelectorAll('.view-btn').forEach(button => {
     });
 });
 
-function isMobile() {
-    return window.innerWidth <= 768;
-}
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    
-    if (isMobile()) {
-        return date.toLocaleString('en-US', { 
-            month: 'short', 
-            day: 'numeric' 
-        });
-    } else {
-        return date.toLocaleString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric', 
-            hour: 'numeric', 
-            minute: '2-digit', 
-            hour12: true 
-        });
-    }
-}
 
 function updateFileType(type) {
     document.querySelectorAll('.view-btn, .file-type-btn').forEach(btn => {
@@ -99,6 +77,7 @@ function updateFileType(type) {
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
                 fileItem.innerHTML = `
+                <div class="file-info">
                     <div class="file-name-section">
                         <div class="file-menu-wrapper">
                             <button class="file-menu-btn" onclick="toggleMenu(this)">&#x22EE;</button>
@@ -111,8 +90,9 @@ function updateFileType(type) {
                         <img src="${icon}" alt="File" class="file-icon">
                         <span class="file-name">${file.file_name.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
                     </div>
-                    <span class="file-date">${formatDate(file.uploaded_at)}</span>
-                `;
+                    <span class="file-date">${new Date(file.uploaded_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                </div>
+            `;
                 filesList.appendChild(fileItem);
             });
         } else {
