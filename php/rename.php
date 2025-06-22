@@ -23,6 +23,14 @@ $user_id = $input['user_id'];
 $file_id = $input['file_id'];
 $newName = $input['new_name'];
 
+for ( $i = 0; $i < strlen($newName); $i++) {
+    if ($newName[$i] === '/' || $newName[$i] === '\\' || $newName[$i] === ':' || $newName[$i] === '*' || $newName[$i] === '?' || $newName[$i] === '"' || $newName[$i] === '<' || $newName[$i] === '>' || $newName[$i] === '|') {
+        http_response_code(400);
+        echo json_encode(['error' => 'Error: Can\'t contain: / \\ : * ? " < > |']);
+        exit;
+    }
+}
+
    try{ 
     $stmt = $pdo->prepare("UPDATE files SET file_name = ? WHERE file_id = ?");
     $stmt->execute([$newName, $file_id]);
