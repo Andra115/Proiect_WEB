@@ -18,7 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fileSize = $_FILES['file']['size'];
         $userId = $_SESSION['user_id'];
         $fileId = null;
-        $chunksCreated = [];
 
         try {
             $pdo->beginTransaction();
@@ -30,8 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             while (true) {
                 $stmt = $pdo->prepare("SELECT COUNT(*) FROM files WHERE user_id = ? AND file_name = ?");
                 $stmt->execute([$userId, $uniqueName]);
-                $exists = $stmt->fetchColumn();
-                if ($exists == 0) break;
+                if ($stmt->fetchColumn() == 0) break;
                 $uniqueName = $baseName . "_" . $counter;
                 if ($extension) $uniqueName .= "." . $extension;
                 $counter++;
@@ -40,10 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("INSERT INTO files (user_id, file_name, file_size, uploaded_at) VALUES (?, ?, ?, NOW()) RETURNING file_id");
             $stmt->execute([$userId, $uniqueName, $fileSize]);
             $fileId = $stmt->fetchColumn();
-
-            if (!$fileId) {
-                throw new Exception("Failed to create file record");
-            }
+            if (!$fileId) throw new Exception("Failed to create file record");
 
             $sql = "SELECT public.distribute_file_chunks(:file_id, :user_id, :file_size, :account_id)";
             $stmt = $pdo->prepare($sql);
@@ -57,198 +52,100 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("SELECT chunk_index, chunk_size FROM file_chunks WHERE file_id = ? ORDER BY chunk_index ASC");
             $stmt->execute([$fileId]);
             $chunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            if (empty($chunks)) {
-                throw new Exception("No chunks were created for the file");
-            }
+            if (empty($chunks)) throw new Exception("No chunks were created for the file");
 
             if (count($chunks) === 1) {
                 $stmt = $pdo->prepare("SELECT account_id FROM file_chunks WHERE file_id = ? LIMIT 1");
                 $stmt->execute([$fileId]);
                 $accountId = $stmt->fetchColumn();
-                
                 if ($accountId) {
                     $stmt = $pdo->prepare("UPDATE files SET account_id = ? WHERE file_id = ?");
                     $stmt->execute([$accountId, $fileId]);
                 }
             }
 
-            $pdo->commit();
+            $stmt = $pdo->prepare("SELECT fc.chunk_id, fc.chunk_index, ac.provider, ac.access_token, ac.refresh_token, ac.token_expiry, ac.account_id 
+                FROM file_chunks fc 
+                JOIN cloud_accounts ac ON fc.account_id = ac.account_id 
+                WHERE fc.file_id = ? ORDER BY fc.chunk_index ASC");
+            $stmt->execute([$fileId]);
+            $cloudChunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (count($cloudChunks) !== count($chunks)) throw new Exception("Mismatch in chunk and account data");
 
             $chunkDir = __DIR__ . '/../uploads/chunks';
-            if (!is_dir($chunkDir)) {
-                if (!mkdir($chunkDir, 0755, true)) {
-                    throw new Exception("Failed to create chunks directory");
-                }
+            if (!is_dir($chunkDir) && !mkdir($chunkDir, 0755, true)) {
+                throw new Exception("Failed to create chunks directory");
             }
 
             $handle = fopen($tmpPath, 'rb');
-if (!$handle) {
-    throw new Exception("Could not open uploaded file for reading");
-}
+            if (!$handle) throw new Exception("Could not open uploaded file for reading");
 
-try {
-    $chunkNum = 1;
-    foreach ($chunks as $chunk) {
-        $chunkPath = $chunkDir . "/{$fileId}_chunk{$chunkNum}";
+            foreach ($chunks as $i => $chunk) {
+                $chunkNum = $chunk['chunk_index'];
+                $chunkSize = $chunk['chunk_size'];
+                $cloudChunk = $cloudChunks[$i];
 
-        $chunkHandle = fopen($chunkPath, 'wb');
-        if (!$chunkHandle) {
-            throw new Exception("Could not create chunk file: {$chunkPath}");
-        }
-
-        try {
-            $remaining = $chunk['chunk_size'];
-            $bufferSize = 8192;
-
-            while ($remaining > 0) {
-                $readSize = min($bufferSize, $remaining);
-                $data = fread($handle, $readSize);
-
-                if ($data === false) {
-                    throw new Exception("Error reading from source file");
-                }
-
-                if (strlen($data) === 0) {
-                    throw new Exception("Unexpected end of file while reading chunk {$chunkNum}");
-                }
-
-                $written = fwrite($chunkHandle, $data);
-                if ($written === false || $written !== strlen($data)) {
-                    throw new Exception("Error writing to chunk file: {$chunkPath}");
-                }
-
-                $remaining -= strlen($data);
-            }
-        } finally {
-            fclose($chunkHandle);
-        }
-
-        $cloudChunk = $cloudChunks[$chunkNum - 1];
-        $provider = $cloudChunk['provider'];
-        $accessToken = $cloudChunk['access_token'];
-        $refreshToken = $cloudChunk['refresh_token'];
-        $expiry = $cloudChunk['token_expiry'];
-        $accountId = $cloudChunk['account_id'];
-        $chunkId = $cloudChunk['chunk_id'];
-
-        $accessToken = refreshTokenIfNeeded($provider, $accessToken, $refreshToken, $expiry, $accountId, $credsBox, $credsDropbox, $credsGoogle, $pdo);
-        if (!$accessToken) {
-            throw new Exception("Failed to refresh access token for chunk {$chunkNum}");
-        }
-
-        $cloudFileName = "chunk_{$fileId}_{$chunkNum}_" . uniqid() . ".bin";
-        $uploadResult = uploadChunkToCloud($provider, $chunkPath, $accessToken, $cloudFileName);
-        if (!$uploadResult) {
-            throw new Exception("Failed to upload chunk {$chunkNum} to {$provider}");
-        }
-
-        $stmt = $pdo->prepare("UPDATE file_chunks SET chunk_file_id = ?, chunk_path = ? WHERE chunk_id = ?");
-        $stmt->execute([
-            $uploadResult['file_id'],
-            $uploadResult['path'],
-            $chunkId
-        ]);
-
-        if (file_exists($chunkPath)) {
-            unlink($chunkPath);
-        }
-
-        $chunkNum++;
-    }
-} finally {
-    fclose($handle);
-}
-
-            foreach ($chunksCreated as $chunkPath) {
-                if (!file_exists($chunkPath) || filesize($chunkPath) === 0) {
-                    throw new Exception("Chunk file verification failed: " . basename($chunkPath));
-                }
-            }
-
-            $stmt = $pdo->prepare("SELECT fc.chunk_id, fc.chunk_index, ac.provider, ac.access_token, ac.refresh_token, ac.token_expiry, ac.account_id 
-                 FROM file_chunks fc JOIN cloud_accounts ac ON fc.account_id = ac.account_id WHERE fc.file_id = ? ORDER BY fc.chunk_index ASC");
-            $stmt->execute([$fileId]);
-            $cloudChunks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            foreach ($cloudChunks as $cloudChunk) {
-                $chunkNum = $cloudChunk['chunk_index'];
                 $chunkPath = $chunkDir . "/{$fileId}_chunk{$chunkNum}";
-                $provider = $cloudChunk['provider'];
-                $accessToken = $cloudChunk['access_token'];
-                $refreshToken = $cloudChunk['refresh_token'];
-                $expiry = $cloudChunk['token_expiry'];
-                $accountId = $cloudChunk['account_id'];
-                $chunkId = $cloudChunk['chunk_id'];
+                $chunkHandle = fopen($chunkPath, 'wb');
+                if (!$chunkHandle) throw new Exception("Could not create chunk file: {$chunkPath}");
 
-                $accessToken = refreshTokenIfNeeded($provider, $accessToken, $refreshToken, $expiry, $accountId, $credsBox, $credsDropbox, $credsGoogle, $pdo);
+                $remaining = $chunkSize;
+                while ($remaining > 0) {
+                    $buffer = fread($handle, min(8192, $remaining));
+                    if ($buffer === false || strlen($buffer) === 0) {
+                        throw new Exception("Error reading from source file");
+                    }
+                    if (fwrite($chunkHandle, $buffer) === false) {
+                        throw new Exception("Error writing to chunk file: {$chunkPath}");
+                    }
+                    $remaining -= strlen($buffer);
+                }
+                fclose($chunkHandle);
+
+                $provider = $cloudChunk['provider'];
+                $accessToken = refreshTokenIfNeeded(
+                    $provider,
+                    $cloudChunk['access_token'],
+                    $cloudChunk['refresh_token'],
+                    $cloudChunk['token_expiry'],
+                    $cloudChunk['account_id'],
+                    $credsBox, $credsDropbox, $credsGoogle,
+                    $pdo
+                );
                 if (!$accessToken) {
-                    throw new Exception("Failed to refresh access token for chunk {$chunkNum}");
+                    throw new Exception("Token refresh failed for chunk {$chunkNum}");
                 }
 
                 $cloudFileName = "chunk_{$fileId}_{$chunkNum}_" . uniqid() . ".bin";
-
                 $uploadResult = uploadChunkToCloud($provider, $chunkPath, $accessToken, $cloudFileName);
                 if (!$uploadResult) {
-                    throw new Exception("Failed to upload chunk {$chunkNum} to {$provider}");
+                    throw new Exception("Cloud upload failed for chunk {$chunkNum}");
                 }
 
                 $stmt = $pdo->prepare("UPDATE file_chunks SET chunk_file_id = ?, chunk_path = ? WHERE chunk_id = ?");
                 $stmt->execute([
                     $uploadResult['file_id'],
                     $uploadResult['path'],
-                    $chunkId
+                    $cloudChunk['chunk_id']
                 ]);
 
-                if (file_exists($chunkPath)) {
-                    unlink($chunkPath);
-                }
+                unlink($chunkPath);
             }
+
+            fclose($handle);
+            $pdo->commit();
 
             $message = 'File "' . htmlspecialchars($originalName) . '" uploaded and chunked successfully!';
 
-        } catch (PDOException $e) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
 
             if ($fileId) {
                 try {
-                    $stmt = $pdo->prepare("DELETE FROM file_chunks WHERE file_id = ?");
-                    $stmt->execute([$fileId]);
-                    
-                    $stmt = $pdo->prepare("DELETE FROM files WHERE file_id = ?");
-                    $stmt->execute([$fileId]);
+                    $pdo->prepare("DELETE FROM file_chunks WHERE file_id = ?")->execute([$fileId]);
+                    $pdo->prepare("DELETE FROM files WHERE file_id = ?")->execute([$fileId]);
                 } catch (PDOException $cleanupError) {
-                    error_log("Failed to cleanup database records: " . $cleanupError->getMessage());
-                }
-            }
-
-            foreach ($chunksCreated as $chunkPath) {
-                if (file_exists($chunkPath)) {
-                    unlink($chunkPath);
-                }
-            }
-
-            $message = 'Database error during upload: ' . htmlspecialchars($e->getMessage());
-            error_log("Upload database error: " . $e->getMessage());
-
-        } catch (Exception $e) {
-            foreach ($chunksCreated as $chunkPath) {
-                if (file_exists($chunkPath)) {
-                    unlink($chunkPath);
-                }
-            }
-
-            if ($fileId && !$pdo->inTransaction()) {
-                try {
-                    $stmt = $pdo->prepare("DELETE FROM file_chunks WHERE file_id = ?");
-                    $stmt->execute([$fileId]);
-                    
-                    $stmt = $pdo->prepare("DELETE FROM files WHERE file_id = ?");
-                    $stmt->execute([$fileId]);
-                } catch (PDOException $cleanupError) {
-                    error_log("Failed to cleanup database records after file processing error: " . $cleanupError->getMessage());
+                    error_log("Cleanup failed: " . $cleanupError->getMessage());
                 }
             }
 
@@ -266,15 +163,8 @@ try {
             UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
             UPLOAD_ERR_EXTENSION => 'Upload stopped by extension'
         ];
-
-        if (isset($_FILES['file']) && $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-            $errorCode = $_FILES['file']['error'];
-            $message = isset($uploadErrors[$errorCode]) 
-                ? $uploadErrors[$errorCode] 
-                : "Unknown upload error (code: {$errorCode})";
-        } else {
-            $message = 'Please select a file to upload.';
-        }
+        $errorCode = $_FILES['file']['error'] ?? null;
+        $message = $uploadErrors[$errorCode] ?? 'Unknown upload error.';
     }
 }
 ?>
