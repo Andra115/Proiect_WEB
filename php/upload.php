@@ -83,53 +83,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $handle = fopen($tmpPath, 'rb');
-            if (!$handle) {
-                throw new Exception("Could not open uploaded file for reading");
-            }
+if (!$handle) {
+    throw new Exception("Could not open uploaded file for reading");
+}
 
-            try {
-                $chunkNum = 1;
-                foreach ($chunks as $chunk) {
-                    $chunkPath = $chunkDir . "/{$fileId}_chunk{$chunkNum}";
-                    $chunksCreated[] = $chunkPath;
+try {
+    $chunkNum = 1;
+    foreach ($chunks as $chunk) {
+        $chunkPath = $chunkDir . "/{$fileId}_chunk{$chunkNum}";
 
-                    $chunkHandle = fopen($chunkPath, 'wb');
-                    if (!$chunkHandle) {
-                        throw new Exception("Could not create chunk file: {$chunkPath}");
-                    }
+        $chunkHandle = fopen($chunkPath, 'wb');
+        if (!$chunkHandle) {
+            throw new Exception("Could not create chunk file: {$chunkPath}");
+        }
 
-                    try {
-                        $remaining = $chunk['chunk_size'];
-                        $bufferSize = 8192;
+        try {
+            $remaining = $chunk['chunk_size'];
+            $bufferSize = 8192;
 
-                        while ($remaining > 0) {
-                            $readSize = min($bufferSize, $remaining);
-                            $data = fread($handle, $readSize);
-                            
-                            if ($data === false) {
-                                throw new Exception("Error reading from source file");
-                            }
-                            
-                            if (strlen($data) === 0) {
-                                throw new Exception("Unexpected end of file while reading chunk {$chunkNum}");
-                            }
+            while ($remaining > 0) {
+                $readSize = min($bufferSize, $remaining);
+                $data = fread($handle, $readSize);
 
-                            $written = fwrite($chunkHandle, $data);
-                            if ($written === false || $written !== strlen($data)) {
-                                throw new Exception("Error writing to chunk file: {$chunkPath}");
-                            }
-
-                            $remaining -= strlen($data);
-                        }
-                    } finally {
-                        fclose($chunkHandle);
-                    }
-
-                    $chunkNum++;
+                if ($data === false) {
+                    throw new Exception("Error reading from source file");
                 }
-            } finally {
-                fclose($handle);
+
+                if (strlen($data) === 0) {
+                    throw new Exception("Unexpected end of file while reading chunk {$chunkNum}");
+                }
+
+                $written = fwrite($chunkHandle, $data);
+                if ($written === false || $written !== strlen($data)) {
+                    throw new Exception("Error writing to chunk file: {$chunkPath}");
+                }
+
+                $remaining -= strlen($data);
             }
+        } finally {
+            fclose($chunkHandle);
+        }
+
+        $cloudChunk = $cloudChunks[$chunkNum - 1];
+        $provider = $cloudChunk['provider'];
+        $accessToken = $cloudChunk['access_token'];
+        $refreshToken = $cloudChunk['refresh_token'];
+        $expiry = $cloudChunk['token_expiry'];
+        $accountId = $cloudChunk['account_id'];
+        $chunkId = $cloudChunk['chunk_id'];
+
+        $accessToken = refreshTokenIfNeeded($provider, $accessToken, $refreshToken, $expiry, $accountId, $credsBox, $credsDropbox, $credsGoogle, $pdo);
+        if (!$accessToken) {
+            throw new Exception("Failed to refresh access token for chunk {$chunkNum}");
+        }
+
+        $cloudFileName = "chunk_{$fileId}_{$chunkNum}_" . uniqid() . ".bin";
+        $uploadResult = uploadChunkToCloud($provider, $chunkPath, $accessToken, $cloudFileName);
+        if (!$uploadResult) {
+            throw new Exception("Failed to upload chunk {$chunkNum} to {$provider}");
+        }
+
+        $stmt = $pdo->prepare("UPDATE file_chunks SET chunk_file_id = ?, chunk_path = ? WHERE chunk_id = ?");
+        $stmt->execute([
+            $uploadResult['file_id'],
+            $uploadResult['path'],
+            $chunkId
+        ]);
+
+        if (file_exists($chunkPath)) {
+            unlink($chunkPath);
+        }
+
+        $chunkNum++;
+    }
+} finally {
+    fclose($handle);
+}
 
             foreach ($chunksCreated as $chunkPath) {
                 if (!file_exists($chunkPath) || filesize($chunkPath) === 0) {
