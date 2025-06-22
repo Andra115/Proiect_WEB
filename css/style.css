@@ -994,7 +994,7 @@ h2 {
 @media (max-width: 768px) {
     .storage-card ul {
         padding: 5px 0;
-        font-size: 0.5em;
+        font-size: 0.75em;
     }
 
     .stats-row {
