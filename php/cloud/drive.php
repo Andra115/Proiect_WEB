@@ -18,6 +18,10 @@ $client->addScope('https://www.googleapis.com/auth/drive');
 $client->setAccessType('offline');
 $client->setPrompt('consent');
 
+$state = bin2hex(random_bytes(16));
+$_SESSION['google_oauth_state'] = $state;
+$client->setState($state);
+
 $authUrl = $client->createAuthUrl();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

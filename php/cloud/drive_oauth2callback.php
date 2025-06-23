@@ -11,6 +11,10 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = $_SESSION['user_id'];
 
+if (!isset($_GET['state']) || $_GET['state'] !== $_SESSION['google_oauth_state']) {
+    die('CSRF validation failed');
+}
+
 $googleCredentialsJson = getenv('GOOGLE_DRIVE_CREDS');
 $tempCredPath = sys_get_temp_dir() . '/google-creds.json';
 file_put_contents($tempCredPath, $googleCredentialsJson);
