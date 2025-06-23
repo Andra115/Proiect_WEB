@@ -1,5 +1,6 @@
 <?php
 session_start();
+header("Content-Security-Policy: default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'");
 require_once 'db.php';
 
 $message = '';

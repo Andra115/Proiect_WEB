@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'db.php';
+header("Content-Security-Policy: default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'");require_once 'db.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Firebase\JWT\JWT;
