@@ -1,4 +1,7 @@
- 
+const token = localStorage.getItem('jwt') || sessionStorage.getItem('jwt');
+if (!token) {
+    window.location.href = '../php/login.php';
+}
 
 function toggleMenu(btn) {
     document.querySelectorAll('.file-menu').forEach(menu => {
