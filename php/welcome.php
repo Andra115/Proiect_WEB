@@ -1,6 +1,6 @@
 <?php
+ob_start();
 session_start();
-
 $pageTitle = 'Welcome - Cloud9 Storage Manager';
 $content = 'welcome_content.php';
 ?>
