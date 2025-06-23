@@ -103,19 +103,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 fclose($chunkHandle);
 
                 $provider = $cloudChunk['provider'];
-                $accessToken = refreshTokenIfNeeded(
-                    $provider,
-                    $cloudChunk['access_token'],
-                    $cloudChunk['refresh_token'],
-                    $cloudChunk['token_expiry'],
-                    $cloudChunk['account_id'],
-                    $credsBox, $credsDropbox, $credsGoogle,
-                    $pdo
-                );
+                $accessToken = refreshTokenIfNeeded($provider,$cloudChunk['access_token'],$cloudChunk['refresh_token'],$cloudChunk['token_expiry'],$cloudChunk['account_id'],$credsBox, $credsDropbox, $credsGoogle,$pdo);
                 if (!$accessToken) {
                     throw new Exception("Token refresh failed for chunk {$chunkNum}");
                 }
-
+                 else{
+        
+                if ($provider == 'dropbox') {
+                    $expiresIn = 14400;
+                } else {
+                    $expiresIn = 3600;
+                }
+            
+            $token_expiry = time() + $expiresIn;
+            $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry);
+        try{
+            $stmtUpdate = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry = ? WHERE account_id = ?");
+            $stmtUpdate->execute([$accessToken, $token_expiry_formatted, $cloudChunk['account_id']]);
+        } catch (Exception $e) {
+            
+            unlink($chunkPath);
+            echo json_encode(['success' => false, 'error' => 'Database error while updating access token for chunk ' . $chunk['chunk_index']]);
+            exit;
+    }
+    }
                 $cloudFileName = "chunk_{$fileId}_{$chunkNum}_" . uniqid() . ".bin";
                 $uploadResult = uploadChunkToCloud($provider, $chunkPath, $accessToken, $cloudFileName);
                 if (!$uploadResult) {

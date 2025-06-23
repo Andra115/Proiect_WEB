@@ -60,13 +60,32 @@ if ($file['account_id']) {
     $refreshToken = $account['refresh_token'];
     $expiry = $account['token_expiry'];
     $accountId = $account['account_id'];
+    $email = $account['email'];
 
     
     $accessToken = refreshTokenIfNeeded($provider, $accessToken, $refreshToken, $expiry, $accountId, $credsBox, $credsDropbox, $credsGoogle, $pdo);
     if (!$accessToken) {
-        echo json_encode(['success' => false, 'error' => 'Token refresh failed']);
+        echo json_encode(['success' => false, 'error' => 'Token refresh failed' . ' Please reconnect to ' . $provider .' ' . $email]);
         exit;
+    } else{
+        
+                if ($provider == 'dropbox') {
+                    $expiresIn = 14400;
+                } else {
+                    $expiresIn = 3600;
+                }
+            
+            $token_expiry = time() + $expiresIn;
+            $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry);
+        try{
+            $stmtUpdate = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry = ? WHERE account_id = ?");
+            $stmtUpdate->execute([$accessToken, $token_expiry_formatted, $accountId]);
+        } catch (Exception $e) {
+            
+            echo json_encode(['success' => false, 'error' => 'Database error while updating access token for chunk ' . $chunk['chunk_index']]);
+            exit;
     }
+}
 
     $stmtId = $pdo->prepare("SELECT chunk_file_id, chunk_path FROM file_chunks WHERE file_id = ?");
     $stmtId->execute([$fileId]);
@@ -98,7 +117,7 @@ if ($file['account_id']) {
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT fc.chunk_file_id, fc.chunk_path, ac.provider, ac.access_token, ac.refresh_token, ac.token_expiry, ac.account_id, fc.chunk_index 
+$stmt = $pdo->prepare("SELECT fc.chunk_file_id, fc.chunk_path, ac.provider, ac.access_token, ac.refresh_token, ac.token_expiry, ac.account_id, fc.chunk_index, ac.email
                          FROM file_chunks fc JOIN cloud_accounts ac ON fc.account_id = ac.account_id WHERE fc.file_id = ? ORDER BY fc.chunk_index ASC");
 $stmt->execute([$fileId]);
 $chunks = $stmt->fetchAll();
@@ -119,13 +138,34 @@ foreach ($chunks as $chunk) {
     $expiry = $chunk['token_expiry'];
     $refreshToken = $chunk['refresh_token'];
     $accountId = $chunk['account_id'];
+    $email = $chunk['email'];
 
     $accessToken = refreshTokenIfNeeded($provider, $accessToken, $refreshToken, $expiry, $accountId, $credsBox, $credsDropbox, $credsGoogle, $pdo);
     if (!$accessToken) {
         unlink($finalPath);
-        echo json_encode(['success' => false, 'error' => 'Token refresh failed for chunk ' . $chunk['chunk_index']]);
+        echo json_encode(['success' => false, 'error' => 'Token refresh failed for chunk ' . $chunk['chunk_index']] . ' Please reconnect to ' . $provider .' ' . $email);
         exit;
     }
+    else{
+        
+                if ($provider == 'dropbox') {
+                    $expiresIn = 14400;
+                } else {
+                    $expiresIn = 3600;
+                }
+            
+            $token_expiry = time() + $expiresIn;
+            $token_expiry_formatted = date('Y-m-d H:i:s', $token_expiry);
+        try{
+            $stmtUpdate = $pdo->prepare("UPDATE cloud_accounts SET access_token = ?, token_expiry = ? WHERE account_id = ?");
+            $stmtUpdate->execute([$accessToken, $token_expiry_formatted, $accountId]);
+        } catch (Exception $e) {
+            
+            unlink($finalPath);
+            echo json_encode(['success' => false, 'error' => 'Database error while updating access token for chunk ' . $chunk['chunk_index']]);
+            exit;
+    }
+}
 
     $tempChunkPath = tempnam(sys_get_temp_dir(), 'chunk_');
 
@@ -212,6 +252,8 @@ function refreshTokenIfNeeded($provider, $accessToken, $refreshToken, $expiry, $
         $newAccessToken = $tokenData['access_token'] ?? null;
         $expiresIn = $tokenData['expires_in'] ?? null;
         $newRefreshToken = $tokenData['refresh_token'] ?? $refreshToken;
+
+
 
         if ($newAccessToken == null) {
             return false;
