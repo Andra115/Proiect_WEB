@@ -1,3 +1,16 @@
+const token = localStorage.getItem('jwt') || sessionStorage.getItem('jwt');
+if (!token) {
+    window.location.href = '../php/login.php';
+} else {
+    try {
+        jwt_decode(token);
+    } catch (err) {
+        localStorage.removeItem('jwt');
+        sessionStorage.removeItem('jwt');
+        window.location.href = '../php/login.php';
+    }
+}
+
 function toggleMenu(btn) {
     document.querySelectorAll('.file-menu').forEach(menu => {
         if (menu !== btn.nextElementSibling) menu.style.display = 'none';

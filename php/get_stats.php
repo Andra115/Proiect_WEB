@@ -2,11 +2,6 @@
 session_start();
 require_once 'db.php';
 
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Not logged in']);
-    exit;
-}
 $userId = $_SESSION['user_id'];
 
 $fileType = $_SESSION['selected_file_type'] ?? '';
