@@ -1353,24 +1353,6 @@ h2 {
     margin-bottom: 1em;
 }
 
-.footer-sidebar-filler {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 250px;
-    height: 50px;
-    background: white;
-    border-top: 1px solid #ddd;
-    z-index: 800;
-    display: block;
-}
-
-@media (max-width: 900px) {
-    .footer-sidebar-filler {
-        display: none;
-    }
-}
-
 .loading-message {
     text-align: center;
     padding: 20px;
@@ -1386,6 +1368,6 @@ h2 {
 
 .documentation-link {
     color: #1c0856;
-    font: Lemon, serif;
+    font-family: Lemon, serif;
     font-size: 1em;
 }
